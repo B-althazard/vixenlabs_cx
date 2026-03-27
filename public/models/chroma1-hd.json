@@ -1,0 +1,11 @@
+{
+  "id": "chroma1-hd",
+  "label": "Chroma1-HD",
+  "supportsWeighting": true,
+  "supportsNegativePrompt": true,
+  "styleSupport": "advisory",
+  "qualityPrefix": ["masterpiece", "best quality", "photorealistic", "cinematic detail"],
+  "negativeBase": ["low quality", "blurry", "deformed hands", "bad anatomy"],
+  "recommendedSettings": { "steps": 36, "cfg_scale": 7, "sampler": "euler" },
+  "ordering": ["identity", "face", "eyes", "hair", "body", "makeup", "lingerie", "posing", "location", "lighting", "camera"]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "camera",
+  "label": "Camera",
+  "fields": [
+    { "id": "shotType", "label": "Shot Type", "type": "single-select", "promptPriority": 110, "options": [
+      { "id": "portrait", "label": "Portrait", "promptValue": "portrait framing" },
+      { "id": "three-quarter", "label": "Three Quarter", "promptValue": "three-quarter shot" },
+      { "id": "full-body", "label": "Full Body", "promptValue": "full-body shot" }
+    ]},
+    { "id": "cameraAngle", "label": "Angle", "type": "single-select", "promptPriority": 111, "options": [
+      { "id": "eye-level", "label": "Eye Level", "promptValue": "eye-level camera angle" },
+      { "id": "slightly-low", "label": "Slightly Low", "promptValue": "slightly low angle" },
+      { "id": "top-down", "label": "Top Down", "promptValue": "top-down angle" }
+    ]},
+    { "id": "lensFeel", "label": "Lens Feel", "type": "single-select", "promptPriority": 112, "options": [
+      { "id": "50mm", "label": "50mm", "promptValue": "50mm lens look" },
+      { "id": "85mm", "label": "85mm", "promptValue": "85mm lens look" },
+      { "id": "placeholder-cinematic-35", "label": "35mm Cine", "promptValue": "cinematic 35mm lens look", "placeholder": true }
+    ]}
+  ]
+}

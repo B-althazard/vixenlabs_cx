@@ -1,0 +1,11 @@
+{
+  "id": "lustify-v7",
+  "label": "Lustify v7",
+  "supportsWeighting": true,
+  "supportsNegativePrompt": true,
+  "styleSupport": "advisory",
+  "qualityPrefix": ["masterpiece", "best quality", "nsfw", "detailed skin"],
+  "negativeBase": ["mutated hands", "extra fingers", "cropped head", "blurry"],
+  "recommendedSettings": { "steps": 30, "cfg_scale": 7, "sampler": "dpm++ 2m" },
+  "ordering": ["identity", "body", "face", "eyes", "hair", "makeup", "lingerie", "posing", "location", "lighting", "camera"]
+}

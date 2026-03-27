@@ -1,0 +1,11 @@
+{
+  "id": "z-image-turbo",
+  "label": "Z-Image Turbo",
+  "supportsWeighting": false,
+  "supportsNegativePrompt": false,
+  "styleSupport": "none",
+  "qualityPrefix": ["photoreal", "clean render", "high detail"],
+  "negativeBase": [],
+  "recommendedSettings": { "steps": 8, "cfg_scale": 2, "sampler": "turbo" },
+  "ordering": ["identity", "body", "face", "eyes", "hair", "makeup", "lingerie", "posing", "location", "lighting", "camera"]
+}

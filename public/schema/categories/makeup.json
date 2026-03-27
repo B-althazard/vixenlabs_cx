@@ -1,0 +1,26 @@
+{
+  "id": "makeup",
+  "label": "Makeup",
+  "fields": [
+    { "id": "foundationFinish", "label": "Foundation", "type": "single-select", "promptPriority": 60, "options": [
+      { "id": "barely-there", "label": "Barely There", "promptValue": "light complexion makeup" },
+      { "id": "soft-matte", "label": "Soft Matte", "promptValue": "soft matte foundation" },
+      { "id": "dewy", "label": "Dewy", "promptValue": "dewy foundation" }
+    ]},
+    { "id": "blush", "label": "Blush", "type": "single-select", "promptPriority": 61, "options": [
+      { "id": "peach", "label": "Peach", "promptValue": "peach blush" },
+      { "id": "rose", "label": "Rose", "promptValue": "rose blush" },
+      { "id": "placeholder-sunflush", "label": "Sunflush", "promptValue": "sun-kissed blush", "placeholder": true }
+    ]},
+    { "id": "lipColor", "label": "Lip Color", "type": "single-select", "promptPriority": 62, "options": [
+      { "id": "nude", "label": "Nude", "promptValue": "nude lipstick" },
+      { "id": "berry", "label": "Berry", "promptValue": "berry lipstick" },
+      { "id": "gloss", "label": "Gloss", "promptValue": "glossy lips" }
+    ]},
+    { "id": "contour", "label": "Contour", "type": "single-select", "promptPriority": 63, "options": [
+      { "id": "soft", "label": "Soft", "promptValue": "soft contour" },
+      { "id": "editorial", "label": "Editorial", "promptValue": "editorial contour" },
+      { "id": "none", "label": "None", "promptValue": "minimal contour" }
+    ]}
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "hair",
+  "label": "Hair",
+  "fields": [
+    { "id": "hairStyle", "label": "Style", "type": "single-select", "promptPriority": 40, "options": [
+      { "id": "long-waves", "label": "Long Waves", "promptValue": "long wavy hair" },
+      { "id": "sleek-bob", "label": "Sleek Bob", "promptValue": "sleek bob haircut" },
+      { "id": "bald", "label": "Bald", "promptValue": "bald head", "disables": ["hairLength", "hairColor"] }
+    ]},
+    { "id": "hairLength", "label": "Length", "type": "single-select", "promptPriority": 41, "options": [
+      { "id": "chin", "label": "Chin", "promptValue": "chin-length hair" },
+      { "id": "shoulder", "label": "Shoulder", "promptValue": "shoulder-length hair" },
+      { "id": "waist", "label": "Waist", "promptValue": "waist-length hair" }
+    ]},
+    { "id": "hairColor", "label": "Color", "type": "single-select", "promptPriority": 42, "options": [
+      { "id": "black", "label": "Black", "promptValue": "black hair" },
+      { "id": "blonde", "label": "Blonde", "promptValue": "blonde hair" },
+      { "id": "auburn", "label": "Auburn", "promptValue": "auburn hair" }
+    ]},
+    { "id": "hairTexture", "label": "Texture", "type": "single-select", "promptPriority": 43, "options": [
+      { "id": "straight", "label": "Straight", "promptValue": "straight hair texture" },
+      { "id": "wavy", "label": "Wavy", "promptValue": "wavy hair texture" },
+      { "id": "curly", "label": "Curly", "promptValue": "curly hair texture" }
+    ]}
+  ]
+}

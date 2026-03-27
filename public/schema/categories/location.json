@@ -1,0 +1,17 @@
+{
+  "id": "location",
+  "label": "Location",
+  "fields": [
+    { "id": "locationType", "label": "Scene", "type": "single-select", "promptPriority": 90, "options": [
+      { "id": "bedroom", "label": "Bedroom", "promptValue": "luxury bedroom setting" },
+      { "id": "studio", "label": "Studio", "promptValue": "editorial studio set" },
+      { "id": "beach-suite", "label": "Beach Suite", "promptValue": "beachfront suite interior" },
+      { "id": "placeholder-neon-loft", "label": "Neon Loft", "promptValue": "neon loft interior", "placeholder": true }
+    ]},
+    { "id": "backdropDetail", "label": "Backdrop Detail", "type": "single-select", "promptPriority": 91, "options": [
+      { "id": "soft-linen", "label": "Soft Linen", "promptValue": "soft linen backdrop" },
+      { "id": "velvet-drapes", "label": "Velvet Drapes", "promptValue": "velvet drapery" },
+      { "id": "city-lights", "label": "City Lights", "promptValue": "city lights in background" }
+    ]}
+  ]
+}

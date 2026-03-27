@@ -1,0 +1,31 @@
+{
+  "id": "face",
+  "label": "Face",
+  "fields": [
+    { "id": "jawline", "label": "Jawline", "type": "single-select", "promptPriority": 20, "options": [
+      { "id": "soft", "label": "Soft", "promptValue": "soft jawline" },
+      { "id": "defined", "label": "Defined", "promptValue": "defined jawline" },
+      { "id": "sharp", "label": "Sharp", "promptValue": "sharp jawline" }
+    ]},
+    { "id": "cheekbones", "label": "Cheekbones", "type": "single-select", "promptPriority": 21, "options": [
+      { "id": "subtle", "label": "Subtle", "promptValue": "subtle cheekbones" },
+      { "id": "high", "label": "High", "promptValue": "high cheekbones" },
+      { "id": "sculpted", "label": "Sculpted", "promptValue": "sculpted cheekbones" }
+    ]},
+    { "id": "noseShape", "label": "Nose Shape", "type": "single-select", "promptPriority": 22, "options": [
+      { "id": "button", "label": "Button", "promptValue": "button nose" },
+      { "id": "straight", "label": "Straight", "promptValue": "straight nose" },
+      { "id": "placeholder-refined", "label": "Refined", "promptValue": "refined nose", "placeholder": true }
+    ]},
+    { "id": "lipShape", "label": "Lips", "type": "single-select", "promptPriority": 23, "options": [
+      { "id": "natural", "label": "Natural", "promptValue": "natural lips" },
+      { "id": "full", "label": "Full", "promptValue": "full lips" },
+      { "id": "pouty", "label": "Pouty", "promptValue": "pouty lips" }
+    ]},
+    { "id": "eyebrows", "label": "Eyebrows", "type": "single-select", "promptPriority": 24, "options": [
+      { "id": "arched", "label": "Arched", "promptValue": "arched eyebrows" },
+      { "id": "straight", "label": "Straight", "promptValue": "straight eyebrows" },
+      { "id": "thick", "label": "Thick", "promptValue": "thick eyebrows" }
+    ]}
+  ]
+}

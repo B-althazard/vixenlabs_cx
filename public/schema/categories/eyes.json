@@ -1,0 +1,36 @@
+{
+  "id": "eyes",
+  "label": "Eyes",
+  "fields": [
+    {
+      "id": "eyeColor",
+      "label": "Eye Color",
+      "type": "multi-select",
+      "maxSelections": 2,
+      "promptPriority": 30,
+      "synergy": {
+        "2": { "id": "heterochromia", "label": "Heterochromia", "promptValue": "heterochromia" }
+      },
+      "options": [
+        { "id": "blue", "label": "Blue", "promptValue": "blue eyes", "promptWeight": 1.1 },
+        { "id": "green", "label": "Green", "promptValue": "green eyes", "promptWeight": 1.1 },
+        { "id": "brown", "label": "Brown", "promptValue": "brown eyes", "promptWeight": 1.05 }
+      ]
+    },
+    { "id": "eyeShape", "label": "Eye Shape", "type": "single-select", "promptPriority": 31, "options": [
+      { "id": "almond", "label": "Almond", "promptValue": "almond eyes" },
+      { "id": "round", "label": "Round", "promptValue": "round eyes" },
+      { "id": "cat-eye", "label": "Cat-Eye", "promptValue": "cat-eye shape" }
+    ]},
+    { "id": "eyelashes", "label": "Eyelashes", "type": "single-select", "promptPriority": 32, "options": [
+      { "id": "natural", "label": "Natural", "promptValue": "natural eyelashes" },
+      { "id": "extended", "label": "Extended", "promptValue": "extended eyelashes" },
+      { "id": "dramatic", "label": "Dramatic", "promptValue": "dramatic eyelashes" }
+    ]},
+    { "id": "eyeMakeup", "label": "Eye Makeup", "type": "multi-select", "maxSelections": 2, "promptPriority": 33, "options": [
+      { "id": "winged-liner", "label": "Winged Liner", "promptValue": "winged eyeliner" },
+      { "id": "shimmer-shadow", "label": "Shimmer Shadow", "promptValue": "shimmer eyeshadow" },
+      { "id": "placeholder-soft-smoke", "label": "Soft Smoke", "promptValue": "soft smoky eyes", "placeholder": true }
+    ]}
+  ]
+}

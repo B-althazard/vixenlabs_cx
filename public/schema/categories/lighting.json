@@ -1,0 +1,16 @@
+{
+  "id": "lighting",
+  "label": "Lighting",
+  "fields": [
+    { "id": "lightStyle", "label": "Light Style", "type": "single-select", "promptPriority": 100, "options": [
+      { "id": "soft-daylight", "label": "Soft Daylight", "promptValue": "soft daylight" },
+      { "id": "golden-hour", "label": "Golden Hour", "promptValue": "golden hour lighting" },
+      { "id": "neon-rim", "label": "Neon Rim", "promptValue": "neon rim lighting" }
+    ]},
+    { "id": "shadowMood", "label": "Shadow Mood", "type": "single-select", "promptPriority": 101, "options": [
+      { "id": "clean", "label": "Clean", "promptValue": "clean soft shadows" },
+      { "id": "dramatic", "label": "Dramatic", "promptValue": "dramatic shadows" },
+      { "id": "placeholder-filmic", "label": "Filmic", "promptValue": "filmic shadow contrast", "placeholder": true }
+    ]}
+  ]
+}

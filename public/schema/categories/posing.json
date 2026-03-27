@@ -1,0 +1,21 @@
+{
+  "id": "posing",
+  "label": "Posing",
+  "fields": [
+    { "id": "stance", "label": "Stance", "type": "single-select", "promptPriority": 80, "options": [
+      { "id": "standing", "label": "Standing", "promptValue": "standing pose" },
+      { "id": "reclining", "label": "Reclining", "promptValue": "reclining pose" },
+      { "id": "kneeling", "label": "Kneeling", "promptValue": "kneeling pose" }
+    ]},
+    { "id": "expression", "label": "Expression", "type": "single-select", "promptPriority": 81, "options": [
+      { "id": "soft-smile", "label": "Soft Smile", "promptValue": "soft smile" },
+      { "id": "sultry", "label": "Sultry", "promptValue": "sultry expression" },
+      { "id": "confident", "label": "Confident", "promptValue": "confident expression" }
+    ]},
+    { "id": "gaze", "label": "Gaze", "type": "single-select", "promptPriority": 82, "options": [
+      { "id": "toward-viewer", "label": "Toward Viewer", "promptValue": "looking at viewer" },
+      { "id": "over-shoulder", "label": "Over Shoulder", "promptValue": "over-the-shoulder glance" },
+      { "id": "downcast", "label": "Downcast", "promptValue": "downcast gaze" }
+    ]}
+  ]
+}

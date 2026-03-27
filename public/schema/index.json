@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0",
+  "generatedAt": "2026-03-27",
+  "categories": [
+    { "id": "identity", "label": "Identity", "icon": "ID", "visible": true, "file": "/schema/categories/identity.json" },
+    { "id": "face", "label": "Face", "icon": "FC", "visible": true, "file": "/schema/categories/face.json" },
+    { "id": "eyes", "label": "Eyes", "icon": "EY", "visible": true, "file": "/schema/categories/eyes.json" },
+    { "id": "hair", "label": "Hair", "icon": "HR", "visible": true, "file": "/schema/categories/hair.json" },
+    { "id": "body", "label": "Body", "icon": "BD", "visible": true, "file": "/schema/categories/body.json" },
+    { "id": "makeup", "label": "Makeup", "icon": "MK", "visible": true, "file": "/schema/categories/makeup.json" },
+    { "id": "lingerie", "label": "Lingerie", "icon": "LG", "visible": true, "file": "/schema/categories/lingerie.json" },
+    { "id": "posing", "label": "Pose", "icon": "PS", "visible": true, "file": "/schema/categories/posing.json" },
+    { "id": "location", "label": "Location", "icon": "LO", "visible": true, "file": "/schema/categories/location.json" },
+    { "id": "lighting", "label": "Lighting", "icon": "LI", "visible": true, "file": "/schema/categories/lighting.json" },
+    { "id": "camera", "label": "Camera", "icon": "CM", "visible": true, "file": "/schema/categories/camera.json" },
+    { "id": "futa-attributes", "label": "Futa", "icon": "FT", "visible": false, "file": "/schema/categories/futa-attributes.json" }
+  ]
+}

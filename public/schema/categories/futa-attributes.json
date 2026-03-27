@@ -1,0 +1,14 @@
+{
+  "id": "futa-attributes",
+  "label": "Futa Attributes",
+  "fields": [
+    { "id": "futaType", "label": "Type", "type": "single-select", "promptPriority": 120, "options": [
+      { "id": "type-a", "label": "Type A", "promptValue": "futanari anatomy type a" },
+      { "id": "type-b", "label": "Type B", "promptValue": "futanari anatomy type b" }
+    ]},
+    { "id": "futaSize", "label": "Size", "type": "single-select", "promptPriority": 121, "options": [
+      { "id": "balanced", "label": "Balanced", "promptValue": "proportional size" },
+      { "id": "placeholder-bold", "label": "Bold", "promptValue": "pronounced size", "placeholder": true }
+    ]}
+  ]
+}

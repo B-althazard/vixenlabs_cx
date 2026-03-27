@@ -1,0 +1,31 @@
+{
+  "id": "body",
+  "label": "Body",
+  "fields": [
+    { "id": "bodyType", "label": "Body Type", "type": "single-select", "promptPriority": 50, "options": [
+      { "id": "slim", "label": "Slim", "promptValue": "slim figure" },
+      { "id": "athletic", "label": "Athletic", "promptValue": "athletic figure" },
+      { "id": "curvy", "label": "Curvy", "promptValue": "curvy figure" }
+    ]},
+    { "id": "height", "label": "Height", "type": "single-select", "promptPriority": 51, "options": [
+      { "id": "petite", "label": "Petite", "promptValue": "petite" },
+      { "id": "average", "label": "Average", "promptValue": "average height" },
+      { "id": "tall", "label": "Tall", "promptValue": "tall" }
+    ]},
+    { "id": "bustSize", "label": "Bust", "type": "single-select", "promptPriority": 52, "options": [
+      { "id": "small", "label": "Small", "promptValue": "small bust" },
+      { "id": "medium", "label": "Medium", "promptValue": "medium bust" },
+      { "id": "large", "label": "Large", "promptValue": "large bust" }
+    ]},
+    { "id": "skinTone", "label": "Skin Tone", "type": "single-select", "promptPriority": 53, "options": [
+      { "id": "fair", "label": "Fair", "promptValue": "fair skin" },
+      { "id": "olive", "label": "Olive", "promptValue": "olive skin" },
+      { "id": "deep", "label": "Deep", "promptValue": "deep skin tone" }
+    ]},
+    { "id": "tattoos", "label": "Tattoos", "type": "multi-select", "maxSelections": 2, "promptPriority": 54, "options": [
+      { "id": "none", "label": "None", "promptValue": "clean skin" },
+      { "id": "arm-ink", "label": "Arm Ink", "promptValue": "arm tattoos" },
+      { "id": "placeholder-fine-line", "label": "Fine Line", "promptValue": "fine line tattoos", "placeholder": true }
+    ]}
+  ]
+}

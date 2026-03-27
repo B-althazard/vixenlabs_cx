@@ -1,0 +1,42 @@
+{
+  "id": "identity",
+  "label": "Identity",
+  "fields": [
+    {
+      "id": "characterType",
+      "label": "Character Type",
+      "type": "single-select",
+      "required": true,
+      "promptPriority": 10,
+      "options": [
+        { "id": "female", "label": "Female", "promptValue": "female" },
+        { "id": "futa", "label": "Futanari", "promptValue": "futanari", "togglesCategory": "futa-attributes" }
+      ]
+    },
+    {
+      "id": "age",
+      "label": "Age",
+      "type": "single-select",
+      "required": true,
+      "promptPriority": 11,
+      "options": [
+        { "id": "18plus", "label": "18+", "promptValue": "adult in her late teens" },
+        { "id": "20s", "label": "20s", "promptValue": "woman in her 20s" },
+        { "id": "30s", "label": "30s", "promptValue": "woman in her 30s" }
+      ]
+    },
+    {
+      "id": "ethnicity",
+      "label": "Ethnicity",
+      "type": "single-select",
+      "required": true,
+      "promptPriority": 12,
+      "options": [
+        { "id": "nordic", "label": "Nordic", "promptValue": "nordic features" },
+        { "id": "latina", "label": "Latina", "promptValue": "latina features" },
+        { "id": "east-asian", "label": "East Asian", "promptValue": "east asian features" },
+        { "id": "placeholder-mixed", "label": "Mixed Heritage", "promptValue": "mixed heritage features", "placeholder": true }
+      ]
+    }
+  ]
+}
