@@ -1,5 +1,6 @@
 export async function loadJson(path) {
-  const response = await fetch(path);
+  const normalizedPath = path.replace(/^\//, '');
+  const response = await fetch(`${import.meta.env.BASE_URL}${normalizedPath}`);
   if (!response.ok) {
     throw new Error(`Failed to load ${path}`);
   }
