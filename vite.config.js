@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  base: '/vixenlabs_cx/',
   plugins: [
     react(),
     VitePWA({
@@ -15,7 +16,7 @@ export default defineConfig({
         theme_color: '#cc785c',
         background_color: '#f7efe6',
         display: 'standalone',
-        start_url: '/',
+        start_url: '/vixenlabs_cx/',
         icons: [
           {
             src: 'icons/icon.svg',
