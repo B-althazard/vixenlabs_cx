@@ -3,10 +3,10 @@
   "label": "Location",
   "fields": [
     { "id": "locationType", "label": "Scene", "type": "single-select", "promptPriority": 90, "options": [
-      { "id": "bedroom", "label": "Bedroom", "promptValue": "luxury bedroom setting" },
-      { "id": "studio", "label": "Studio", "promptValue": "editorial studio set" },
-      { "id": "beach-suite", "label": "Beach Suite", "promptValue": "beachfront suite interior" },
-      { "id": "placeholder-neon-loft", "label": "Neon Loft", "promptValue": "neon loft interior", "placeholder": true }
+      { "id": "bedroom", "label": "Bedroom", "promptValue": "luxury bedroom setting", "suggests": ["lightStyle:soft-daylight"], "incompatibleWith": ["backdropDetail:city-lights"] },
+      { "id": "studio", "label": "Studio", "promptValue": "editorial studio set", "suggests": ["lightStyle:golden-hour"] },
+      { "id": "beach-suite", "label": "Beach Suite", "promptValue": "beachfront suite interior", "suggests": ["lightStyle:golden-hour"], "incompatibleWith": ["backdropDetail:velvet-drapes", "lightStyle:neon-rim"] },
+      { "id": "placeholder-neon-loft", "label": "Neon Loft", "promptValue": "neon loft interior", "placeholder": true, "suggests": ["lightStyle:neon-rim", "shadowMood:dramatic"], "incompatibleWith": ["lightStyle:golden-hour"] }
     ]},
     { "id": "backdropDetail", "label": "Backdrop Detail", "type": "single-select", "promptPriority": 91, "options": [
       { "id": "soft-linen", "label": "Soft Linen", "promptValue": "soft linen backdrop" },

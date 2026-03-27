@@ -1,17 +1,17 @@
-const PRESETS_KEY = 'vixenlabs.presets';
+const USER_PRESETS_KEY = 'vixenlabs.user-presets';
 const SETTINGS_KEY = 'vixenlabs.settings';
 
-export function loadPresets() {
+export function loadUserPresets() {
   try {
-    const raw = localStorage.getItem(PRESETS_KEY);
+    const raw = localStorage.getItem(USER_PRESETS_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-export function savePresets(presets) {
-  localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+export function saveUserPresets(presets) {
+  localStorage.setItem(USER_PRESETS_KEY, JSON.stringify(presets));
 }
 
 export function loadSettings() {
@@ -25,4 +25,11 @@ export function loadSettings() {
 
 export function saveSettings(settings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+export function createSettingsPatch(currentSettings, patch) {
+  return {
+    ...currentSettings,
+    ...patch
+  };
 }

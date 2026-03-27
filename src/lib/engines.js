@@ -16,6 +16,9 @@ const PROMPT_BLOCK_LABELS = {
 export function evaluateState(schemaBundle, formValues) {
   const disabled = {};
   const visibleCategories = {};
+  const notices = [];
+  const invalidSelections = new Set();
+  const missingRequired = [];
 
   for (const category of schemaBundle.categories) {
     visibleCategories[category.id] = category.visible;
@@ -29,6 +32,18 @@ export function evaluateState(schemaBundle, formValues) {
 
   for (const category of schemaBundle.categories) {
     for (const field of category.definition.fields) {
+      const rawValue = formValues[field.id];
+      const isEmpty = Array.isArray(rawValue) ? rawValue.length === 0 : rawValue == null;
+
+      if (field.required && !disabled[field.id] && isEmpty) {
+        missingRequired.push({ fieldId: field.id, label: field.label, categoryId: category.id });
+        notices.push({
+          type: 'validation',
+          source: field.label,
+          message: 'This required field needs a selection.'
+        });
+      }
+
       const selectedOptionIds = Array.isArray(formValues[field.id])
         ? formValues[field.id]
         : [formValues[field.id]];
@@ -45,25 +60,110 @@ export function evaluateState(schemaBundle, formValues) {
         if (option.togglesCategory) {
           visibleCategories[option.togglesCategory] = true;
         }
+
+        for (const suggestion of option.suggests || []) {
+          notices.push({
+            type: 'suggestion',
+            source: `${field.label}: ${option.label}`,
+            message: buildSuggestionMessage(suggestion)
+          });
+        }
+
+        for (const conflict of option.incompatibleWith || []) {
+          const [targetFieldId, targetOptionId] = conflict.split(':');
+          const targetValue = formValues[targetFieldId];
+          const targetValues = Array.isArray(targetValue) ? targetValue : [targetValue];
+
+          if (!targetValues.includes(targetOptionId)) {
+            continue;
+          }
+
+          invalidSelections.add(`${targetFieldId}:${targetOptionId}`);
+          notices.push({
+            type: 'conflict',
+            source: `${field.label}: ${option.label}`,
+            message: `Conflicts with ${targetFieldId} -> ${targetOptionId.replaceAll('-', ' ')}.`
+          });
+        }
       }
     }
   }
 
-  return { disabled, visibleCategories };
+  return { disabled, visibleCategories, notices, invalidSelections, missingRequired, isValid: missingRequired.length === 0 };
 }
 
-export function sanitizeFormValues(schemaBundle, formValues, disabled) {
+export function sanitizeFormValues(schemaBundle, formValues, disabled, invalidSelections = new Set()) {
   const nextValues = { ...formValues };
+  const resetNotices = [];
 
   for (const category of schemaBundle.categories) {
     for (const field of category.definition.fields) {
       if (disabled[field.id]) {
         nextValues[field.id] = field.type === 'multi-select' ? [] : null;
+        resetNotices.push({
+          type: 'reset',
+          source: field.label,
+          message: 'Cleared because this field is disabled by the current selection.'
+        });
+        continue;
+      }
+
+      if (field.type === 'multi-select') {
+        const current = Array.isArray(nextValues[field.id]) ? nextValues[field.id] : [];
+        const filtered = current.filter((optionId) => !invalidSelections.has(`${field.id}:${optionId}`));
+        if (filtered.length !== current.length) {
+          nextValues[field.id] = filtered;
+          resetNotices.push({
+            type: 'reset',
+            source: field.label,
+            message: 'Removed incompatible selections automatically.'
+          });
+        }
+        continue;
+      }
+
+      const current = nextValues[field.id];
+      if (current != null && invalidSelections.has(`${field.id}:${current}`)) {
+        const fallback = (field.options || []).find((option) => !invalidSelections.has(`${field.id}:${option.id}`));
+        nextValues[field.id] = fallback ? fallback.id : null;
+        resetNotices.push({
+          type: 'reset',
+          source: field.label,
+          message: `Reset to ${fallback ? fallback.label : 'empty'} because the previous option conflicted.`
+        });
       }
     }
   }
 
-  return nextValues;
+  return { values: nextValues, resetNotices };
+}
+
+export function resolveState(schemaBundle, formValues) {
+  let values = { ...formValues };
+  let evaluation = evaluateState(schemaBundle, values);
+  let notices = [...evaluation.notices];
+
+  for (let index = 0; index < 4; index += 1) {
+    const sanitized = sanitizeFormValues(schemaBundle, values, evaluation.disabled, evaluation.invalidSelections);
+    const changed = JSON.stringify(sanitized.values) !== JSON.stringify(values);
+    values = sanitized.values;
+    notices = [...notices, ...sanitized.resetNotices];
+
+    if (!changed) {
+      return {
+        values,
+        evaluation: { ...evaluation, notices }
+      };
+    }
+
+    evaluation = evaluateState(schemaBundle, values);
+    notices = [...evaluation.notices, ...sanitized.resetNotices];
+  }
+
+  return {
+    values,
+    evaluation: { ...evaluation, notices }
+  };
 }
 
 export function getPromptFragments(schemaBundle, model, formValues, visibleCategories) {
@@ -140,8 +240,17 @@ export function buildPromptPackage(schemaBundle, models, selectedModelId, formVa
       : 'This model responds better to compact prompts; avoid adding a separate negative prompt.',
     recommendedSettings: model.recommendedSettings,
     blocks: fragments,
-    placeholders
+    placeholders,
+    blockCount: fragments.length
   };
+}
+
+export function buildSuggestionMessage(suggestion) {
+  const [fieldId, optionId] = suggestion.includes(':') ? suggestion.split(':') : [suggestion, null];
+  if (!optionId) {
+    return `Consider aligning ${fieldId}.`;
+  }
+  return `Consider ${fieldId} -> ${optionId.replaceAll('-', ' ')}.`;
 }
 
 export function randomizeForm(schemaBundle, fieldIndex, currentValues, locks, disabled) {
@@ -168,10 +277,10 @@ export function randomizeForm(schemaBundle, fieldIndex, currentValues, locks, di
     }
   }
 
-  const evaluation = evaluateState(schemaBundle, nextValues);
+  const resolved = resolveState(schemaBundle, nextValues);
   return {
-    values: sanitizeFormValues(schemaBundle, nextValues, evaluation.disabled),
-    evaluation
+    values: resolved.values,
+    evaluation: resolved.evaluation
   };
 }
 

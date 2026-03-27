@@ -3,19 +3,19 @@
   "label": "Lingerie",
   "fields": [
     { "id": "lingerieType", "label": "Type", "type": "single-select", "required": true, "promptPriority": 70, "options": [
-      { "id": "lace-set", "label": "Lace Set", "promptValue": "lace lingerie set" },
-      { "id": "silk-slip", "label": "Silk Slip", "promptValue": "silk slip lingerie" },
-      { "id": "mesh-bodysuit", "label": "Mesh Bodysuit", "promptValue": "mesh bodysuit lingerie" }
+      { "id": "lace-set", "label": "Lace Set", "promptValue": "lace lingerie set", "suggests": ["stockings:thigh-high", "heels:stiletto"] },
+      { "id": "silk-slip", "label": "Silk Slip", "promptValue": "silk slip lingerie", "suggests": ["locationType:bedroom", "lightStyle:soft-daylight"], "incompatibleWith": ["stockings:patterned"] },
+      { "id": "mesh-bodysuit", "label": "Mesh Bodysuit", "promptValue": "mesh bodysuit lingerie", "suggests": ["shadowMood:dramatic", "cameraAngle:slightly-low"] }
     ]},
     { "id": "lingerieMaterial", "label": "Material", "type": "single-select", "promptPriority": 71, "options": [
       { "id": "lace", "label": "Lace", "promptValue": "delicate lace fabric" },
-      { "id": "satin", "label": "Satin", "promptValue": "smooth satin fabric" },
-      { "id": "sheer-mesh", "label": "Sheer Mesh", "promptValue": "sheer mesh fabric" }
+      { "id": "satin", "label": "Satin", "promptValue": "smooth satin fabric", "suggests": ["lightStyle:golden-hour"], "incompatibleWith": ["stockings:patterned"] },
+      { "id": "sheer-mesh", "label": "Sheer Mesh", "promptValue": "sheer mesh fabric", "suggests": ["shadowMood:dramatic"] }
     ]},
     { "id": "lingerieColor", "label": "Color", "type": "single-select", "promptPriority": 72, "options": [
-      { "id": "black", "label": "Black", "promptValue": "black lingerie" },
-      { "id": "ivory", "label": "Ivory", "promptValue": "ivory lingerie" },
-      { "id": "crimson", "label": "Crimson", "promptValue": "crimson lingerie" }
+      { "id": "black", "label": "Black", "promptValue": "black lingerie", "suggests": ["locationType:neon-loft", "shadowMood:dramatic"] },
+      { "id": "ivory", "label": "Ivory", "promptValue": "ivory lingerie", "suggests": ["lightStyle:soft-daylight"] },
+      { "id": "crimson", "label": "Crimson", "promptValue": "crimson lingerie", "suggests": ["backdropDetail:velvet-drapes"] }
     ]},
     { "id": "lingerieCoverage", "label": "Coverage", "type": "single-select", "promptPriority": 73, "options": [
       { "id": "teasing", "label": "Teasing", "promptValue": "teasing cut" },
@@ -25,7 +25,7 @@
     { "id": "stockings", "label": "Stockings", "type": "single-select", "promptPriority": 74, "options": [
       { "id": "none", "label": "None", "promptValue": "bare legs" },
       { "id": "thigh-high", "label": "Thigh High", "promptValue": "thigh-high stockings" },
-      { "id": "patterned", "label": "Patterned", "promptValue": "patterned stockings" }
+      { "id": "patterned", "label": "Patterned", "promptValue": "patterned stockings", "incompatibleWith": ["lingerieType:silk-slip", "lingerieMaterial:satin"] }
     ]},
     { "id": "heels", "label": "Heels", "type": "single-select", "promptPriority": 75, "options": [
       { "id": "none", "label": "None", "promptValue": "barefoot" },

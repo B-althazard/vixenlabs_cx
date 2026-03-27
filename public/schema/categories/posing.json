@@ -3,14 +3,14 @@
   "label": "Posing",
   "fields": [
     { "id": "stance", "label": "Stance", "type": "single-select", "promptPriority": 80, "options": [
-      { "id": "standing", "label": "Standing", "promptValue": "standing pose" },
-      { "id": "reclining", "label": "Reclining", "promptValue": "reclining pose" },
-      { "id": "kneeling", "label": "Kneeling", "promptValue": "kneeling pose" }
+      { "id": "standing", "label": "Standing", "promptValue": "standing pose", "suggests": ["shotType:full-body"], "incompatibleWith": ["cameraAngle:top-down"] },
+      { "id": "reclining", "label": "Reclining", "promptValue": "reclining pose", "suggests": ["cameraAngle:top-down", "shotType:three-quarter", "locationType:bedroom"], "incompatibleWith": ["shotType:full-body"] },
+      { "id": "kneeling", "label": "Kneeling", "promptValue": "kneeling pose", "suggests": ["cameraAngle:slightly-low"] }
     ]},
     { "id": "expression", "label": "Expression", "type": "single-select", "promptPriority": 81, "options": [
       { "id": "soft-smile", "label": "Soft Smile", "promptValue": "soft smile" },
-      { "id": "sultry", "label": "Sultry", "promptValue": "sultry expression" },
-      { "id": "confident", "label": "Confident", "promptValue": "confident expression" }
+      { "id": "sultry", "label": "Sultry", "promptValue": "sultry expression", "suggests": ["shadowMood:dramatic"] },
+      { "id": "confident", "label": "Confident", "promptValue": "confident expression", "suggests": ["cameraAngle:slightly-low"] }
     ]},
     { "id": "gaze", "label": "Gaze", "type": "single-select", "promptPriority": 82, "options": [
       { "id": "toward-viewer", "label": "Toward Viewer", "promptValue": "looking at viewer" },

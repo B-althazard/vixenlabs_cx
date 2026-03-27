@@ -37,6 +37,10 @@ export async function loadModels() {
   }, {});
 }
 
+export async function loadSystemPresets() {
+  return loadJson('/presets/system-presets.json');
+}
+
 export function flattenSchema(schemaBundle) {
   return schemaBundle.categories.flatMap((category) =>
     category.definition.fields.map((field) => ({

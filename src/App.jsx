@@ -13,11 +13,16 @@ export default function App() {
     disabled,
     visibleCategories,
     promptPackage,
+    notices,
+    isValid,
+    missingRequired,
     models,
     selectedModelId,
     presets,
     gallery,
     activeCategoryId,
+    copyStatus,
+    actionStatus,
     loading,
     error,
     initialize,
@@ -28,7 +33,15 @@ export default function App() {
     randomize,
     captureGeneration,
     savePreset,
-    loadPreset
+    loadPreset,
+    deleteUserPreset,
+    loadGalleryEntry,
+    deleteGalleryEntry,
+    resetCurrentLook,
+    copyPrompt,
+    exportCurrentLook,
+    exportUserPresets,
+    importUserPresets
   } = useAppStore();
 
   useEffect(() => {
@@ -125,14 +138,31 @@ export default function App() {
           selectedModelId={selectedModelId}
           onSelectModel={setModel}
           promptPackage={promptPackage}
+          notices={notices}
+          copyStatus={copyStatus}
+          actionStatus={actionStatus}
+          isValid={isValid}
+          missingRequired={missingRequired}
           onRandomize={randomize}
           onGenerate={captureGeneration}
           onSavePreset={savePreset}
+          onCopyPrompt={copyPrompt}
+          onResetLook={resetCurrentLook}
+          onExportLook={exportCurrentLook}
+          onExportPresets={exportUserPresets}
+          onImportPresets={importUserPresets}
         />
       </div>
 
       <div className="mt-5">
-        <GalleryPanel gallery={gallery} presets={presets} onLoadPreset={loadPreset} />
+        <GalleryPanel
+          gallery={gallery}
+          presets={presets}
+          onLoadPreset={loadPreset}
+          onDeletePreset={deleteUserPreset}
+          onLoadGallery={loadGalleryEntry}
+          onDeleteGallery={deleteGalleryEntry}
+        />
       </div>
     </div>
   );
