@@ -73,7 +73,12 @@
     heartbeatMs: 1500,
     connectionFreshMs: 4500,
     clickDelayMs: 80,
-    replayWaitMs: 600
+    replayWaitMs: 600,
+    pendingFreshMs: 5 * 60 * 1000
+  };
+
+  const bridgeState = {
+    recoveryInFlight: false
   };
 
   function isApp() {
@@ -326,12 +331,81 @@
     });
   }
 
+  async function resumePendingImageTransfer(job, request = null) {
+    if (!job?.nonce) {
+      return;
+    }
+
+    setActiveJob({
+      ...job,
+      prompt: request?.prompt || job.prompt,
+      previousSrc: job.previousSrc || '',
+      status: 'waiting-image'
+    });
+
+    publishStatus({
+      nonce: job.nonce,
+      status: 'resuming image transfer',
+      detail: 'Waiting for the active Venice render to finish.'
+    });
+
+    await waitForImageResult({
+      ...job,
+      prompt: request?.prompt || job.prompt,
+      previousSrc: job.previousSrc || ''
+    });
+  }
+
+  async function tryRecoverPendingRequest(reason = 'recovery') {
+    if (bridgeState.recoveryInFlight) {
+      return;
+    }
+
+    bridgeState.recoveryInFlight = true;
+
+    try {
+      const request = GM_getValue(KEYS.REQUEST, null);
+      const nonce = GM_getValue(KEYS.REQUEST_NONCE, null);
+      const ts = Number(GM_getValue(KEYS.TIMESTAMP, 0) || 0);
+      const lastProcessed = GM_getValue(KEYS.LAST_PROCESSED_NONCE, null);
+      const activeJob = getActiveJob();
+
+      if (!request?.prompt || !nonce || !ts) {
+        return;
+      }
+
+      if (Date.now() - ts > CONFIG.pendingFreshMs) {
+        return;
+      }
+
+      if (nonce === lastProcessed) {
+        return;
+      }
+
+      if (activeJob && activeJob.nonce === nonce && ['submitted', 'waiting-image', 'resuming-image-transfer'].includes(activeJob.status)) {
+        await resumePendingImageTransfer(activeJob, request);
+        return;
+      }
+
+      if (reason !== 'heartbeat') {
+        await handleVeniceJob(request);
+      }
+    } finally {
+      bridgeState.recoveryInFlight = false;
+    }
+  }
+
   function replayPendingRequest() {
     const request = GM_getValue(KEYS.REQUEST, null);
     const nonce = GM_getValue(KEYS.REQUEST_NONCE, null);
     const lastProcessed = GM_getValue(KEYS.LAST_PROCESSED_NONCE, null);
 
     if (!request?.nonce || !nonce || nonce === lastProcessed) {
+      return;
+    }
+
+    const activeJob = getActiveJob();
+    if (activeJob && activeJob.nonce === nonce && ['submitted', 'waiting-image', 'resuming-image-transfer'].includes(activeJob.status)) {
       return;
     }
 
@@ -344,7 +418,7 @@
         previousSrc: getActiveJob()?.previousSrc || '',
         status: 'resuming-image-transfer'
       });
-      handleVeniceJob(request);
+      tryRecoverPendingRequest('heartbeat');
     }, CONFIG.replayWaitMs);
   }
 
@@ -493,6 +567,12 @@
         return;
       }
 
+      const activeJob = getActiveJob();
+      if (activeJob && activeJob.nonce === request.nonce && ['submitted', 'waiting-image', 'resuming-image-transfer'].includes(activeJob.status)) {
+        await resumePendingImageTransfer(activeJob, request);
+        return;
+      }
+
       emitBridgeReadyIfFresh();
       await handleVeniceJob(request);
     });
@@ -505,6 +585,11 @@
     document.addEventListener('visibilitychange', () => {
       const job = getActiveJob();
       if (!job) {
+        return;
+      }
+
+      if (document.visibilityState === 'visible') {
+        tryRecoverPendingRequest('visibility').catch(() => {});
         return;
       }
 

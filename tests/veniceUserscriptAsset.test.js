@@ -51,4 +51,11 @@ describe('Venice userscript asset', () => {
     expect(processedIndex).toBeGreaterThan(publishIndex);
     expect(eagerProcessedIndex).toBe(-1);
   });
+
+  it('does not resubmit an already active nonce during heartbeat recovery', () => {
+    expect(userscript).toContain('bridgeState.recoveryInFlight');
+    expect(userscript).toContain("['submitted', 'waiting-image', 'resuming-image-transfer'].includes(activeJob.status)");
+    expect(userscript).toContain("tryRecoverPendingRequest('heartbeat')");
+    expect(userscript).toContain('await resumePendingImageTransfer(activeJob, request);');
+  });
 });
