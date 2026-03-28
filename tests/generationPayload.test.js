@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createDefaultFormValues } from '../src/lib/schema.js';
-import { buildGenerationPayload } from '../src/lib/engines.js';
+import { buildGenerationPayload, buildPromptPackage } from '../src/lib/engines.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,5 +103,26 @@ describe('generation payload builder', () => {
       cfg_scale: models['z-image-turbo'].recommendedSettings.cfg_scale,
       sampler: models['z-image-turbo'].recommendedSettings.sampler
     });
+  });
+
+  it('exposes the generated payload contract through buildPromptPackage for downstream UI use', () => {
+    const schemaBundle = loadSchemaBundle();
+    const models = loadModels();
+    const formValues = createDefaultFormValues(schemaBundle);
+    const visibleCategories = Object.fromEntries(
+      schemaBundle.categories.map((category) => [category.id, category.visible])
+    );
+
+    const promptPackage = buildPromptPackage(
+      schemaBundle,
+      models,
+      'chroma1-hd',
+      formValues,
+      visibleCategories
+    );
+
+    expect(promptPackage.generationPayload).toBeTruthy();
+    expect(promptPackage.generationPayload.settings.model).toBe('chroma1-hd');
+    expect(promptPackage.generationSupport).toEqual(models['chroma1-hd'].generation.supports);
   });
 });
