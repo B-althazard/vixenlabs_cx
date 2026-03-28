@@ -60,6 +60,16 @@ function loadModels() {
   };
 }
 
+function createWindowMock() {
+  const eventTarget = new EventTarget();
+
+  return {
+    addEventListener: eventTarget.addEventListener.bind(eventTarget),
+    removeEventListener: eventTarget.removeEventListener.bind(eventTarget),
+    dispatchEvent: eventTarget.dispatchEvent.bind(eventTarget)
+  };
+}
+
 describe('useAppStore generation flow', async () => {
   const { createInitializedState, useAppStore } = await import('../src/store/useAppStore.js');
 
@@ -84,6 +94,7 @@ describe('useAppStore generation flow', async () => {
     bridgeHandlers = null;
     dispatchGenerationRequest.mockReset();
     unsubscribeBridge.mockReset();
+    vi.stubGlobal('window', createWindowMock());
     seedLoadedStore();
   });
 
@@ -95,6 +106,7 @@ describe('useAppStore generation flow', async () => {
     expect(typeof state.setupGenerationBridge).toBe('function');
 
     state.setupGenerationBridge();
+    bridgeHandlers.onReady({ source: 'userscript' });
     await state.submitGeneration();
 
     const queuedJob = useAppStore.getState().generationJobs[0];
@@ -145,6 +157,7 @@ describe('useAppStore generation flow', async () => {
   it('binds image results to the matching nonce and ignores stale retry results', async () => {
     const state = useAppStore.getState();
     state.setupGenerationBridge();
+    bridgeHandlers.onReady({ source: 'userscript' });
 
     await state.submitGeneration();
     const firstJob = useAppStore.getState().generationJobs[0];
@@ -174,7 +187,7 @@ describe('useAppStore generation flow', async () => {
 
     expect(useAppStore.getState().generationJobs[0]).toMatchObject({
       nonce: retryJob.nonce,
-      resultDataUrl: undefined
+      resultDataUrl: null
     });
 
     bridgeHandlers.onError({ nonce: retryJob.nonce, message: 'Bridge hidden tab recovery required' });

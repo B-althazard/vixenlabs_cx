@@ -20,7 +20,12 @@ export default function App() {
     selectedModelId,
     presets,
     gallery,
+    generationJobs,
     activeCategoryId,
+    bridgeReady,
+    bridgeConnected,
+    bridgeState,
+    bridgeStatusDetail,
     runtimeUpdateAvailable,
     runtimeUpdateMessage,
     copyStatus,
@@ -33,7 +38,8 @@ export default function App() {
     setActiveCategoryId,
     setModel,
     randomize,
-    captureGeneration,
+    submitGeneration,
+    retryGeneration,
     savePreset,
     loadPreset,
     deleteUserPreset,
@@ -144,12 +150,18 @@ export default function App() {
           notices={notices}
           runtimeUpdateAvailable={runtimeUpdateAvailable}
           runtimeUpdateMessage={runtimeUpdateMessage}
+          generationJobs={generationJobs}
+          bridgeReady={bridgeReady}
+          bridgeConnected={bridgeConnected}
+          bridgeState={bridgeState}
+          bridgeStatusDetail={bridgeStatusDetail}
           copyStatus={copyStatus}
           actionStatus={actionStatus}
           isValid={isValid}
           missingRequired={missingRequired}
           onRandomize={randomize}
-          onGenerate={captureGeneration}
+          onGenerate={submitGeneration}
+          onRetryGeneration={retryGeneration}
           onSavePreset={savePreset}
           onRefreshRuntime={refreshRuntime}
           onCopyPrompt={copyPrompt}
@@ -162,7 +174,7 @@ export default function App() {
 
       <div className="mt-5">
         <GalleryPanel
-          gallery={gallery}
+          gallery={[...generationJobs, ...gallery]}
           presets={presets}
           onLoadPreset={loadPreset}
           onDeletePreset={deleteUserPreset}

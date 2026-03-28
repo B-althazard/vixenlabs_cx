@@ -20,6 +20,11 @@ import {
   sanitizePresetCollection,
   sanitizeSettings
 } from '../lib/runtimeState';
+import {
+  dispatchGenerationRequest,
+  normalizeBridgeStatus,
+  subscribeToVeniceBridge
+} from '../lib/veniceBridge';
 
 const galleryDb = new Dexie('vixenlabs-gallery');
 galleryDb.version(1).stores({ images: '++id, createdAt' });
@@ -41,7 +46,13 @@ export const useAppStore = create((set, get) => ({
   systemPresets: [],
   userPresets: [],
   gallery: [],
+  generationJobs: [],
   activeCategoryId: 'identity',
+  bridgeReady: false,
+  bridgeConnected: false,
+  bridgeState: 'unavailable',
+  bridgeStatusDetail: '',
+  bridgeUnsubscribe: null,
   runtimeUpdateAvailable: false,
   runtimeUpdateMessage: '',
   applyRuntimeUpdate: null,
@@ -73,9 +84,38 @@ export const useAppStore = create((set, get) => ({
         runtimeUpdateMessage: '',
         applyRuntimeUpdate: null
       });
+      get().setupGenerationBridge();
     } catch (error) {
       set({ error: error.message, loading: false });
     }
+  },
+  setupGenerationBridge() {
+    const state = get();
+
+    if (state.bridgeUnsubscribe || typeof window === 'undefined') {
+      return state.bridgeUnsubscribe;
+    }
+
+    const bridgeUnsubscribe = subscribeToVeniceBridge({
+      onReady: (payload) => {
+        applyBridgeConnection(set, get, normalizeBridgeStatus({ type: 'ready', ...payload }));
+      },
+      onHeartbeat: (payload) => {
+        applyBridgeConnection(set, get, normalizeBridgeStatus({ type: 'heartbeat', ...payload }));
+      },
+      onStatus: (payload) => {
+        applyNormalizedJobUpdate(set, get, normalizeBridgeStatus(payload));
+      },
+      onImage: (payload) => {
+        handleGenerationImage(set, get, payload);
+      },
+      onError: (payload) => {
+        handleGenerationError(set, get, payload);
+      }
+    });
+
+    set({ bridgeUnsubscribe });
+    return bridgeUnsubscribe;
   },
   updateField(fieldId, value) {
     const state = get();
@@ -175,26 +215,57 @@ export const useAppStore = create((set, get) => ({
     });
     persistWorkingState(get());
   },
-  async captureGeneration() {
+  async submitGeneration(sourceNonce = null) {
     const state = get();
-    const entry = {
-      createdAt: new Date().toISOString(),
-      imageUrl: null,
-      isPlaceholder: true,
-      title: `Placeholder render ${state.gallery.length + 1}`,
-      selectedModelId: state.selectedModelId,
-      formValues: state.formValues,
-      promptPackage: state.promptPackage
+    const sourceJob = sourceNonce
+      ? state.generationJobs.find((job) => job.nonce === sourceNonce)
+      : null;
+
+    if (!state.bridgeReady || state.bridgeConnected === false || state.bridgeState === 'bridge_unavailable') {
+      set({
+        bridgeReady: false,
+        bridgeConnected: false,
+        bridgeState: 'bridge_unavailable',
+        bridgeStatusDetail: state.bridgeStatusDetail,
+        actionStatus: buildBridgeRecoveryMessage(state.bridgeStatusDetail)
+      });
+      return null;
+    }
+
+    const job = createGenerationJobSnapshot(state, sourceJob);
+    const request = {
+      nonce: job.nonce,
+      prompt: job.generationPayload.prompt,
+      settings: job.generationPayload.settings,
+      meta: {
+        selectedModelId: job.selectedModelId,
+        attempt: job.attempt,
+        createdAt: job.createdAt
+      }
     };
 
-    const id = await galleryDb.images.add(entry);
-    const gallery = await galleryDb.images.orderBy('createdAt').reverse().toArray();
-    set({ gallery: gallery.map((item) => ({ ...item, id: item.id || id })), actionStatus: 'Added render to gallery' });
-    clearActionStatus(get, set);
+    if (job.generationPayload.negativePrompt) {
+      request.negativePrompt = job.generationPayload.negativePrompt;
+    }
+
+    set((currentState) => ({
+      generationJobs: [job, ...currentState.generationJobs],
+      actionStatus: `Queued Venice job ${job.attempt}`
+    }));
+
+    dispatchGenerationRequest(request);
+    return job.nonce;
+  },
+  async retryGeneration(nonce) {
+    return get().submitGeneration(nonce);
+  },
+  async captureGeneration() {
+    return get().submitGeneration();
   },
   async loadGalleryEntry(entryId) {
     const state = get();
-    const entry = state.gallery.find((item) => item.id === entryId);
+    const entry = state.generationJobs.find((item) => item.nonce === entryId || item.id === entryId)
+      || state.gallery.find((item) => item.id === entryId);
     if (!entry) {
       return;
     }
@@ -212,6 +283,16 @@ export const useAppStore = create((set, get) => ({
     clearActionStatus(get, set);
   },
   async deleteGalleryEntry(entryId) {
+    const generationJob = get().generationJobs.find((item) => item.nonce === entryId || item.id === entryId);
+    if (generationJob) {
+      set((state) => ({
+        generationJobs: state.generationJobs.filter((item) => item.nonce !== generationJob.nonce),
+        actionStatus: 'Deleted generation snapshot'
+      }));
+      clearActionStatus(get, set);
+      return;
+    }
+
     await galleryDb.images.delete(entryId);
     const gallery = await galleryDb.images.orderBy('createdAt').reverse().toArray();
     set({ gallery, actionStatus: 'Deleted gallery entry' });
@@ -407,7 +488,13 @@ export function createInitializedState({
     userPresets: sanitizedPresets.value,
     presets: [...systemPresets, ...sanitizedPresets.value],
     gallery: sanitizedGallery.value,
+    generationJobs: [],
     activeCategoryId,
+    bridgeReady: false,
+    bridgeConnected: false,
+    bridgeState: 'unavailable',
+    bridgeStatusDetail: '',
+    bridgeUnsubscribe: null,
     copyStatus: '',
     actionStatus: buildRecoveryStatus(
       'Recovered your session',
@@ -425,6 +512,174 @@ export function createInitializedState({
       activeCategoryId
     }
   };
+}
+
+function createGenerationJobSnapshot(state, sourceJob = null) {
+  const nonce = createGenerationNonce();
+  const payload = cloneData(sourceJob?.generationPayload || state.promptPackage?.generationPayload || {});
+  const promptPackageSnapshot = cloneData(sourceJob?.promptPackageSnapshot || state.promptPackage);
+  const formValuesSnapshot = cloneData(sourceJob?.formValuesSnapshot || state.formValues);
+
+  return {
+    nonce,
+    id: nonce,
+    createdAt: new Date().toISOString(),
+    completedAt: null,
+    status: 'queued',
+    detail: 'Waiting for Venice bridge',
+    bridgeState: state.bridgeState,
+    canRetry: false,
+    attempt: (sourceJob?.attempt || 0) + 1,
+    selectedModelId: sourceJob?.selectedModelId || state.selectedModelId,
+    generationPayload: payload,
+    promptPackageSnapshot,
+    promptPackage: promptPackageSnapshot,
+    formValuesSnapshot,
+    formValues: formValuesSnapshot,
+    resultDataUrl: null,
+    errorMessage: '',
+    title: `Venice render ${state.generationJobs.length + 1}`
+  };
+}
+
+function applyBridgeConnection(set, get, normalized) {
+  const isUnavailable = normalized.status === 'bridge_unavailable';
+
+  set({
+    bridgeReady: !isUnavailable,
+    bridgeConnected: normalized.connected !== false,
+    bridgeState: normalized.bridgeState || normalized.status,
+    bridgeStatusDetail: normalized.detail || ''
+  });
+
+  if (isUnavailable) {
+    set({ actionStatus: buildBridgeRecoveryMessage(normalized.detail) });
+  }
+}
+
+function applyNormalizedJobUpdate(set, get, normalized) {
+  if (!normalized?.nonce) {
+    applyBridgeConnection(set, get, normalized);
+    return;
+  }
+
+  set((state) => ({
+    bridgeReady: normalized.connected !== false,
+    bridgeConnected: normalized.connected !== false,
+    bridgeState: normalized.bridgeState || state.bridgeState,
+    bridgeStatusDetail: normalized.detail || state.bridgeStatusDetail,
+    generationJobs: updateGenerationJobs(state.generationJobs, normalized.nonce, (job) => ({
+      ...job,
+      status: normalized.status,
+      detail: normalized.detail || job.detail,
+      bridgeState: normalized.bridgeState || job.bridgeState,
+      canRetry: !!normalized.canRetry,
+      errorMessage: normalized.status === 'failed' || normalized.status === 'retryable'
+        ? normalized.detail || job.errorMessage
+        : job.errorMessage,
+      completedAt: normalized.status === 'succeeded' ? new Date().toISOString() : job.completedAt
+    }))
+  }));
+
+  if (normalized.status === 'retryable' || normalized.status === 'waiting_visibility' || normalized.status === 'bridge_unavailable') {
+    set({ actionStatus: buildGenerationStatusMessage(normalized) });
+    return;
+  }
+
+  if (normalized.status === 'failed') {
+    set({ actionStatus: buildGenerationFailureMessage(normalized.detail) });
+  }
+}
+
+function handleGenerationImage(set, get, payload) {
+  const nonce = payload?.nonce;
+  if (!nonce) {
+    set({ actionStatus: buildGenerationFailureMessage('Result payload missing nonce.') });
+    return;
+  }
+
+  const matchingJob = get().generationJobs.find((job) => job.nonce === nonce);
+  if (!matchingJob) {
+    set({ actionStatus: buildGenerationFailureMessage('Ignored a stale Venice result that no longer matches an active snapshot.') });
+    return;
+  }
+
+  set((state) => ({
+    generationJobs: updateGenerationJobs(state.generationJobs, nonce, (job) => ({
+      ...job,
+      status: 'succeeded',
+      detail: payload.detail || 'Image received',
+      completedAt: new Date().toISOString(),
+      resultDataUrl: payload.dataUrl,
+      canRetry: false,
+      errorMessage: ''
+    })),
+    actionStatus: 'Venice image received'
+  }));
+}
+
+function handleGenerationError(set, get, payload) {
+  const nonce = payload?.nonce;
+  const detail = payload?.message || payload?.detail || 'Venice bridge recovery failed.';
+
+  if (!nonce) {
+    set({ actionStatus: buildGenerationFailureMessage(detail) });
+    return;
+  }
+
+  set((state) => ({
+    generationJobs: updateGenerationJobs(state.generationJobs, nonce, (job) => ({
+      ...job,
+      status: 'failed',
+      detail,
+      errorMessage: detail,
+      canRetry: true
+    })),
+    actionStatus: buildGenerationFailureMessage(detail)
+  }));
+}
+
+function updateGenerationJobs(jobs, nonce, updateJob) {
+  return jobs.map((job) => {
+    if (job.nonce !== nonce) {
+      return job;
+    }
+
+    return updateJob(job);
+  });
+}
+
+function buildBridgeRecoveryMessage(detail = '') {
+  const suffix = detail ? ` ${detail}` : '';
+  return `Venice bridge unavailable.${suffix} Install the bridge userscript, sign in to Venice.ai, and keep a Venice tab visible before retrying.`;
+}
+
+function buildGenerationStatusMessage(normalized) {
+  if (normalized.status === 'waiting_visibility') {
+    return 'Venice needs a visible browser tab before the job can continue. Bring Venice.ai to the foreground and retry if needed.';
+  }
+
+  if (normalized.status === 'bridge_unavailable') {
+    return buildBridgeRecoveryMessage(normalized.detail);
+  }
+
+  return `Venice job needs recovery: ${normalized.detail || 'Retry when the bridge is ready.'}`;
+}
+
+function buildGenerationFailureMessage(detail = '') {
+  return `Venice recovery failed. ${detail}`.trim();
+}
+
+function createGenerationNonce() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  return `venice-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function cloneData(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value));
 }
 
 export function restorePersistedSelection({
