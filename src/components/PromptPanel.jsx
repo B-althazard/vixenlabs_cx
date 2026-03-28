@@ -4,6 +4,8 @@ export default function PromptPanel({
   onSelectModel,
   promptPackage,
   notices,
+  runtimeUpdateAvailable,
+  runtimeUpdateMessage,
   copyStatus,
   actionStatus,
   isValid,
@@ -11,6 +13,7 @@ export default function PromptPanel({
   onRandomize,
   onGenerate,
   onSavePreset,
+  onRefreshRuntime,
   onCopyPrompt,
   onResetLook,
   onExportLook,
@@ -103,6 +106,20 @@ export default function PromptPanel({
           </div>
         )}
       </div>
+
+      {runtimeUpdateAvailable && (
+        <div className="mt-4 rounded-[24px] bg-sky-50 p-4 text-sm text-sky-950">
+          <div className="font-medium">New release ready</div>
+          <p className="mt-1">{runtimeUpdateMessage}</p>
+          <button
+            type="button"
+            onClick={onRefreshRuntime}
+            className="mt-3 rounded-full bg-sky-600 px-4 py-2 font-medium text-white"
+          >
+            Refresh App
+          </button>
+        </div>
+      )}
 
       <div className="mt-5 flex flex-wrap gap-3">
         <button type="button" onClick={onGenerate} disabled={!isValid} className="rounded-full bg-ember px-5 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">

@@ -21,6 +21,8 @@ export default function App() {
     presets,
     gallery,
     activeCategoryId,
+    runtimeUpdateAvailable,
+    runtimeUpdateMessage,
     copyStatus,
     actionStatus,
     loading,
@@ -38,6 +40,7 @@ export default function App() {
     loadGalleryEntry,
     deleteGalleryEntry,
     resetCurrentLook,
+    refreshRuntime,
     copyPrompt,
     exportCurrentLook,
     exportUserPresets,
@@ -139,6 +142,8 @@ export default function App() {
           onSelectModel={setModel}
           promptPackage={promptPackage}
           notices={notices}
+          runtimeUpdateAvailable={runtimeUpdateAvailable}
+          runtimeUpdateMessage={runtimeUpdateMessage}
           copyStatus={copyStatus}
           actionStatus={actionStatus}
           isValid={isValid}
@@ -146,6 +151,7 @@ export default function App() {
           onRandomize={randomize}
           onGenerate={captureGeneration}
           onSavePreset={savePreset}
+          onRefreshRuntime={refreshRuntime}
           onCopyPrompt={copyPrompt}
           onResetLook={resetCurrentLook}
           onExportLook={exportCurrentLook}

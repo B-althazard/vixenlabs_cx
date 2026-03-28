@@ -1,6 +1,7 @@
 import Dexie from 'dexie';
 import { create } from 'zustand';
 import { buildPromptPackage, randomizeForm, resolveState } from '../lib/engines';
+import { createRuntimeUpdateState, RUNTIME_UPDATE_MESSAGE } from '../lib/runtimeFreshness';
 import { buildFieldIndex, createDefaultFormValues, createDefaultLocks, loadModels, loadSchemaBundle, loadSystemPresets } from '../lib/schema';
 import { createSettingsPatch, loadSettings, loadUserPresets, saveSettings, saveUserPresets } from '../lib/storage';
 
@@ -25,6 +26,9 @@ export const useAppStore = create((set, get) => ({
   userPresets: [],
   gallery: [],
   activeCategoryId: 'identity',
+  runtimeUpdateAvailable: false,
+  runtimeUpdateMessage: '',
+  applyRuntimeUpdate: null,
   copyStatus: '',
   actionStatus: '',
   loading: true,
@@ -61,6 +65,9 @@ export const useAppStore = create((set, get) => ({
         presets: [...systemPresets, ...userPresets],
         gallery,
         activeCategoryId,
+        runtimeUpdateAvailable: false,
+        runtimeUpdateMessage: '',
+        applyRuntimeUpdate: null,
         copyStatus: '',
         actionStatus: '',
         loading: false,
@@ -108,6 +115,26 @@ export const useAppStore = create((set, get) => ({
   setActiveCategoryId(categoryId) {
     set({ activeCategoryId: categoryId });
     persistWorkingState({ ...get(), activeCategoryId: categoryId });
+  },
+  setRuntimeUpdateReady(applyRuntimeUpdate) {
+    set({
+      ...createRuntimeUpdateState(applyRuntimeUpdate),
+      actionStatus: RUNTIME_UPDATE_MESSAGE
+    });
+  },
+  async refreshRuntime() {
+    const { applyRuntimeUpdate } = get();
+
+    set({ actionStatus: 'Refreshing app…' });
+
+    if (applyRuntimeUpdate) {
+      await applyRuntimeUpdate(true);
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
   },
   setModel(selectedModelId) {
     const state = get();

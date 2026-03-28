@@ -1,4 +1,5 @@
 const FALLBACK_RUNTIME_VERSION = 'dev';
+export const RUNTIME_UPDATE_MESSAGE = 'A new release is ready. Refresh to load the latest schema, models, and presets.';
 
 export function getRuntimeVersion() {
   if (typeof __APP_VERSION__ !== 'undefined' && __APP_VERSION__) {
@@ -14,4 +15,12 @@ export function createVersionedRuntimeUrl(path, runtimeVersion = getRuntimeVersi
   const params = new URLSearchParams(queryString || '');
   params.set('v', runtimeVersion);
   return `${pathname}?${params.toString()}`;
+}
+
+export function createRuntimeUpdateState(applyRuntimeUpdate) {
+  return {
+    runtimeUpdateAvailable: true,
+    runtimeUpdateMessage: RUNTIME_UPDATE_MESSAGE,
+    applyRuntimeUpdate: applyRuntimeUpdate || null
+  };
 }
