@@ -4,6 +4,9 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   base: '/vixenlabs_cx/',
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || 'dev')
+  },
   plugins: [
     react(),
     VitePWA({
@@ -27,7 +30,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,json}']
+        globPatterns: ['**/*.{js,css,html,png,svg}']
       }
     })
   ]

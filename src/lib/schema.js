@@ -3,10 +3,10 @@ import {
   validateSchemaBundle,
   validateSystemPresets
 } from './contentValidation';
+import { createVersionedRuntimeUrl } from './runtimeFreshness';
 
 export async function loadJson(path) {
-  const normalizedPath = path.replace(/^\//, '');
-  const response = await fetch(`${import.meta.env.BASE_URL}${normalizedPath}`);
+  const response = await fetch(createVersionedRuntimeUrl(path));
   if (!response.ok) {
     throw new Error(`Failed to load ${path}`);
   }
