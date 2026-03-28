@@ -156,4 +156,33 @@ describe('venice bridge adapter', () => {
       message: 'handler exploded'
     });
   });
+
+  it('surfaces ready, stale, and unavailable bridge signals for the app', () => {
+    expect(normalizeBridgeStatus({ type: 'ready', source: 'userscript' })).toMatchObject({
+      status: 'running',
+      bridgeState: 'ready',
+      connected: true,
+      terminal: false,
+      canRetry: false
+    });
+
+    expect(
+      normalizeBridgeStatus({ type: 'heartbeat', source: 'venice-heartbeat', ts: Date.now() - 10_000 })
+    ).toMatchObject({
+      status: 'bridge_unavailable',
+      bridgeState: 'stale',
+      connected: false,
+      terminal: true,
+      canRetry: true
+    });
+
+    expect(normalizeBridgeStatus({ connected: false, status: 'standby', detail: 'bridge offline' })).toMatchObject({
+      status: 'bridge_unavailable',
+      bridgeState: 'unavailable',
+      connected: false,
+      terminal: true,
+      canRetry: true,
+      detail: 'bridge offline'
+    });
+  });
 });
