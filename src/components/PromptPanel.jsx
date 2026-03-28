@@ -4,6 +4,11 @@ export default function PromptPanel({
   onSelectModel,
   promptPackage,
   notices,
+  generationJobs,
+  bridgeReady,
+  bridgeConnected,
+  bridgeState,
+  bridgeStatusDetail,
   runtimeUpdateAvailable,
   runtimeUpdateMessage,
   copyStatus,
@@ -12,6 +17,7 @@ export default function PromptPanel({
   missingRequired,
   onRandomize,
   onGenerate,
+  onRetryGeneration,
   onSavePreset,
   onRefreshRuntime,
   onCopyPrompt,
@@ -21,6 +27,15 @@ export default function PromptPanel({
   onImportPresets
 }) {
   const modelList = Object.values(models);
+  const payloadEntries = buildPayloadEntries(promptPackage?.generationPayload);
+  const activeJob = generationJobs?.[0] || null;
+  const statusCards = buildStatusCards({
+    activeJob,
+    bridgeReady,
+    bridgeConnected,
+    bridgeState,
+    bridgeStatusDetail
+  });
 
   const handleImport = async (event) => {
     const file = event.target.files?.[0];
@@ -71,17 +86,47 @@ export default function PromptPanel({
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="rounded-[24px] bg-white p-4">
           <div className="text-xs uppercase tracking-[0.24em] text-stone-500">Negative</div>
-          <p className="mt-2 text-sm text-stone-700">{promptPackage?.negativePrompt}</p>
+          <p className="mt-2 text-sm text-stone-700">{promptPackage?.generationPayload?.negativePrompt || 'Not supported for this model.'}</p>
         </div>
         <div className="rounded-[24px] bg-white p-4">
-          <div className="text-xs uppercase tracking-[0.24em] text-stone-500">Settings</div>
-          <p className="mt-2 text-sm text-stone-700">
-            Steps {promptPackage?.recommendedSettings?.steps} / CFG {promptPackage?.recommendedSettings?.cfg_scale}
-          </p>
-          <p className="text-sm text-stone-700">Sampler {promptPackage?.recommendedSettings?.sampler}</p>
-          <p className="mt-2 text-sm text-stone-700">Blocks {promptPackage?.blockCount}</p>
+          <div className="text-xs uppercase tracking-[0.24em] text-stone-500">Venice Payload</div>
+          <div className="mt-2 space-y-2 text-sm text-stone-700">
+            {payloadEntries.map(([label, value]) => (
+              <div key={label} className="rounded-2xl bg-stone-50 px-3 py-2">
+                <div className="text-[11px] uppercase tracking-[0.18em] text-stone-500">{label}</div>
+                <div className="mt-1 break-words text-stone-800">{value}</div>
+              </div>
+            ))}
+            <p className="text-sm text-stone-700">Blocks {promptPackage?.blockCount}</p>
+          </div>
         </div>
       </div>
+
+      {!!statusCards.length && (
+        <div className="mt-4 grid gap-3">
+          {statusCards.map((card) => (
+            <div key={card.label} className={`rounded-[24px] p-4 text-sm ${card.tone}`}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.18em]">{card.label}</div>
+                  <div className="mt-1 font-medium">{card.title}</div>
+                </div>
+                {card.badge && <div className="rounded-full border border-current px-3 py-1 text-[11px] uppercase tracking-[0.18em]">{card.badge}</div>}
+              </div>
+              {card.detail && <p className="mt-2 leading-6">{card.detail}</p>}
+              {card.canRetry && activeJob && (
+                <button
+                  type="button"
+                  onClick={() => onRetryGeneration(activeJob.nonce)}
+                  className="mt-3 rounded-full border border-current px-4 py-2 font-medium"
+                >
+                  Retry Job
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className={`mt-4 rounded-[24px] p-4 text-sm ${isValid ? 'bg-emerald-50 text-emerald-900' : 'bg-rose-50 text-rose-900'}`}>
         <div className="font-medium">{isValid ? 'Ready to build' : 'Missing required fields'}</div>
@@ -123,7 +168,7 @@ export default function PromptPanel({
 
       <div className="mt-5 flex flex-wrap gap-3">
         <button type="button" onClick={onGenerate} disabled={!isValid} className="rounded-full bg-ember px-5 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">
-          Generate Placeholder
+          Generate with Venice
         </button>
         <button type="button" onClick={onSavePreset} disabled={!isValid} className="rounded-full border border-stone-300 px-5 py-3 font-medium text-ink disabled:cursor-not-allowed disabled:opacity-50">
           Save As New Preset
@@ -158,4 +203,92 @@ export default function PromptPanel({
       )}
     </aside>
   );
+}
+
+function buildPayloadEntries(payload) {
+  if (!payload) {
+    return [];
+  }
+
+  const entries = [
+    ['provider', payload.provider],
+    ['prompt', payload.prompt],
+    ['negativePrompt', payload.negativePrompt]
+  ];
+
+  Object.entries(payload.settings || {}).forEach(([key, value]) => {
+    entries.push([`settings.${key}`, formatPayloadValue(value)]);
+  });
+
+  return entries
+    .filter(([, value]) => value != null && value !== '')
+    .map(([label, value]) => [label, formatPayloadValue(value)]);
+}
+
+function buildStatusCards({ activeJob, bridgeReady, bridgeConnected, bridgeState, bridgeStatusDetail }) {
+  const cards = [];
+
+  if (!bridgeReady || bridgeConnected === false || bridgeState === 'bridge_unavailable') {
+    cards.push({
+      label: 'Bridge',
+      title: 'Bridge unavailable',
+      detail: bridgeStatusDetail || 'Install the userscript, sign in to Venice.ai, and keep a Venice tab visible.',
+      badge: 'bridge_unavailable',
+      tone: 'bg-amber-50 text-amber-950',
+      canRetry: false
+    });
+  }
+
+  if (activeJob) {
+    cards.push({
+      label: 'Latest Job',
+      title: getJobTitle(activeJob.status),
+      detail: activeJob.detail || `Attempt ${activeJob.attempt}`,
+      badge: activeJob.status,
+      tone: getJobTone(activeJob.status),
+      canRetry: activeJob.status === 'retryable'
+    });
+  }
+
+  return cards;
+}
+
+function getJobTitle(status) {
+  const titles = {
+    queued: 'Queued for Venice',
+    running: 'Generation running',
+    succeeded: 'Generation complete',
+    failed: 'Generation failed',
+    retryable: 'Generation needs recovery',
+    waiting_visibility: 'Waiting for visible Venice tab',
+    bridge_unavailable: 'Bridge unavailable'
+  };
+
+  return titles[status] || 'Generation status update';
+}
+
+function getJobTone(status) {
+  const tones = {
+    queued: 'bg-sky-50 text-sky-950',
+    running: 'bg-indigo-50 text-indigo-950',
+    succeeded: 'bg-emerald-50 text-emerald-950',
+    failed: 'bg-rose-50 text-rose-950',
+    retryable: 'bg-amber-50 text-amber-950',
+    waiting_visibility: 'bg-amber-50 text-amber-950',
+    bridge_unavailable: 'bg-amber-50 text-amber-950'
+  };
+
+  return tones[status] || 'bg-stone-100 text-stone-900';
+}
+
+function formatPayloadValue(value) {
+  if (Array.isArray(value)) {
+    return value.join(', ');
+  }
+
+  if (typeof value === 'object' && value) {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
 }

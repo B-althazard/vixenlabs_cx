@@ -43,19 +43,33 @@ export default function GalleryPanel({ gallery, presets, onLoadPreset, onDeleteP
           {gallery.length === 0 && <div className="col-span-2 text-sm text-stone-500">Generated entries land here.</div>}
           {gallery.map((entry) => (
             <article key={entry.id} className="overflow-hidden rounded-[24px] border border-stone-200 bg-white">
-              <div className="aspect-[3/4] bg-gradient-to-br from-stone-900 via-ember to-clay p-4 text-white">
-                <div className="text-xs uppercase tracking-[0.24em] text-white/70">Placeholder</div>
-                <div className="mt-3 font-display text-xl">{entry.title}</div>
-                <div className="mt-3 text-xs uppercase tracking-[0.18em] text-white/70">{entry.selectedModelId}</div>
-                <div className="mt-6 text-sm text-white/80">{entry.promptPackage?.blocks?.slice(0, 4).map((block) => block.text).join(', ')}</div>
+              <div className="aspect-[3/4] overflow-hidden bg-gradient-to-br from-stone-900 via-ember to-clay p-4 text-white">
+                {entry.resultDataUrl ? (
+                  <img src={entry.resultDataUrl} alt={entry.title || 'Generated Venice result'} className="h-full w-full rounded-[18px] object-cover" />
+                ) : (
+                  <>
+                    <div className="text-xs uppercase tracking-[0.24em] text-white/70">{entry.status || 'Snapshot'}</div>
+                    <div className="mt-3 font-display text-xl">{entry.title}</div>
+                    <div className="mt-3 text-xs uppercase tracking-[0.18em] text-white/70">{entry.selectedModelId}</div>
+                    <div className="mt-6 text-sm text-white/80">
+                      {entry.promptPackage?.blocks?.slice(0, 4).map((block) => block.text).join(', ')
+                        || entry.promptPackageSnapshot?.blocks?.slice(0, 4).map((block) => block.text).join(', ')
+                        || 'Waiting for a Venice result preview.'}
+                    </div>
+                  </>
+                )}
               </div>
               <div className="space-y-3 p-3 text-xs text-stone-500">
                 <div>{new Date(entry.createdAt).toLocaleString()}</div>
+                <div className="rounded-2xl bg-stone-50 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-stone-700">
+                  {(entry.status || 'saved').replaceAll('_', ' ')}{entry.attempt ? ` · Attempt ${entry.attempt}` : ''}
+                </div>
+                {entry.detail && <div className="text-sm text-stone-600">{entry.detail}</div>}
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => onLoadGallery(entry.id)} className="rounded-full border border-stone-300 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-stone-700">
+                  <button type="button" onClick={() => onLoadGallery(entry.id || entry.nonce)} className="rounded-full border border-stone-300 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-stone-700">
                     Load
                   </button>
-                  <button type="button" onClick={() => onDeleteGallery(entry.id)} className="rounded-full border border-stone-300 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-stone-700">
+                  <button type="button" onClick={() => onDeleteGallery(entry.id || entry.nonce)} className="rounded-full border border-stone-300 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-stone-700">
                     Delete
                   </button>
                 </div>
