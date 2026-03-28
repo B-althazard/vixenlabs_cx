@@ -18,8 +18,8 @@ Requirements for the current roadmap. These focus on turning the existing brownf
 
 - [ ] **GEN-01**: User can submit the current character configuration to a Venice-backed generation flow and start an image job from the app
 - [ ] **GEN-02**: User can see generation state for each job, including queued, running, succeeded, failed, and retryable outcomes
-- [ ] **GEN-03**: User can configure only supported generation controls for the active provider or model, including model choice and any supported size, seed, variants, style, and negative prompt options
-- [ ] **GEN-04**: User can trust that the prompt output panel shows exactly the resolved payload used for generation, without hard-coded extra properties
+- [x] **GEN-03**: User can configure only supported generation controls for the active provider or model, including model choice and any supported size, seed, variants, style, and negative prompt options
+- [x] **GEN-04**: User can trust that the prompt output panel shows exactly the resolved payload used for generation, without hard-coded extra properties
 - [ ] **GEN-05**: User can retry or recover a generation job without accidentally attaching the wrong result to the wrong character snapshot
 
 ### Gallery and Presets
@@ -81,8 +81,8 @@ Which phases cover which requirements. This is updated during roadmap creation.
 | SCHEMA-04 | Phase 1 | Complete |
 | GEN-01 | Phase 2 | Pending |
 | GEN-02 | Phase 2 | Pending |
-| GEN-03 | Phase 2 | Pending |
-| GEN-04 | Phase 2 | Pending |
+| GEN-03 | Phase 2 | Complete |
+| GEN-04 | Phase 2 | Complete |
 | GEN-05 | Phase 2 | Pending |
 | GAL-01 | Phase 3 | Pending |
 | GAL-02 | Phase 3 | Pending |

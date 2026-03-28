@@ -42,7 +42,12 @@ Plans:
   2. User can see each job move through queued, running, succeeded, failed, and retryable states, with clear status when browser automation fails.
   3. User can configure only controls supported by the active provider or model, and the prompt output panel matches the exact resolved payload used for generation.
   4. User can retry or recover a generation without attaching the wrong image result to the wrong character snapshot.
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 02-venice-generation-workflow/02-01-PLAN.md — Add config-driven Venice payload contracts and model capability metadata.
+- [x] 02-venice-generation-workflow/02-01-PLAN.md — Add config-driven Venice payload contracts and model capability metadata.
+- [ ] 02-venice-generation-workflow/02-02-PLAN.md — Build the app-side Venice bridge adapter and lifecycle normalization.
+- [ ] 02-venice-generation-workflow/02-03-PLAN.md — Wire store/UI submission, status, retry, and nonce-safe result attachment.
 **UI hint**: yes
 
 ### Phase 3: Real Gallery & Preset Persistence
@@ -77,6 +82,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Trusted Schema & Runtime Boundaries | 3/3 | Complete | 2026-03-28 |
-| 2. Venice Generation Workflow | 0/TBD | Not started | - |
+| 2. Venice Generation Workflow | 1/3 | In Progress | - |
 | 3. Real Gallery & Preset Persistence | 0/TBD | Not started | - |
 | 4. Mobile-First Creator Flow | 0/TBD | Not started | - |
