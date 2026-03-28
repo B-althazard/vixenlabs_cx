@@ -8,8 +8,9 @@ Why: Venice bridge automation requires a local browser userscript.
 
 ### Checklist
 - Install ViolentMonkey or an equivalent userscript extension in the browser used for local testing.
-- Install or update the Venice bridge userscript from `https://b-althazard.github.io/vixenlabs_cx/vixenlabs-venice-bridge.user.js` or use the in-app `Install Bridge Script` button.
+- Install or update the Venice bridge userscript from `https://b-althazard.github.io/vixenlabs_cx/vixenlabs-venice-bridge.user.js` or use the in-app `Install or Update Bridge` button.
 - Confirm the extension is enabled for the same browser profile used by this app.
+- If the extension shows an old version, confirm the update prompt manually and refresh the app tab after installation.
 
 ## Venice
 

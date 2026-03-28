@@ -4,26 +4,14 @@ export function getUserscriptUrl() {
   const baseUrl = typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL
     ? import.meta.env.BASE_URL
     : '/';
+  const buildId = typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_BUILD_ID
+    ? import.meta.env.VITE_APP_BUILD_ID
+    : Date.now();
 
-  return `${baseUrl}${USERSCRIPT_FILENAME}`;
+  return `${baseUrl}${USERSCRIPT_FILENAME}?v=${buildId}`;
 }
 
 export function downloadBridgeUserscript() {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  const link = document.createElement('a');
-  link.href = getUserscriptUrl();
-  link.download = USERSCRIPT_FILENAME;
-  link.rel = 'noopener';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  return true;
-}
-
-export function openBridgeUserscript() {
   if (typeof window === 'undefined') {
     return false;
   }

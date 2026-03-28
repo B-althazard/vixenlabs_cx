@@ -444,7 +444,7 @@ export const useAppStore = create((set, get) => ({
 
     set({
       actionStatus: opened
-        ? 'Opened the Venice bridge userscript for install/update.'
+        ? 'Opened the Venice bridge userscript update page. Confirm reinstall/update in your userscript extension.'
         : 'Bridge userscript install is only available in the browser.'
     });
 

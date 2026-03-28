@@ -172,7 +172,7 @@ export default function PromptPanel({
           Generate with Venice
         </button>
         <button type="button" onClick={onInstallBridgeUserscript} className="rounded-full border border-stone-300 px-5 py-3 font-medium text-ink">
-          Install Bridge Script
+          Install or Update Bridge
         </button>
         <button type="button" onClick={onSavePreset} disabled={!isValid} className="rounded-full border border-stone-300 px-5 py-3 font-medium text-ink disabled:cursor-not-allowed disabled:opacity-50">
           Save As New Preset
@@ -203,6 +203,11 @@ export default function PromptPanel({
           }`}
         >
           {actionStatus}
+        </div>
+      )}
+      {!bridgeReady && (
+        <div className="mt-2 text-xs text-stone-500">
+          After clicking install, confirm the update inside ViolentMonkey or Tampermonkey, then refresh the app.
         </div>
       )}
     </aside>
