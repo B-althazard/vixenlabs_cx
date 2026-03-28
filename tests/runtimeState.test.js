@@ -8,6 +8,11 @@ import {
   sanitizePresetCollection,
   sanitizeSettings
 } from '../src/lib/runtimeState.js';
+import {
+  createInitializedState,
+  mergeImportedPresets,
+  restorePersistedSelection
+} from '../src/store/useAppStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -118,5 +123,86 @@ describe('runtime state sanitizers', () => {
     expect(sanitized.value).toEqual([]);
     expect(sanitized.notices.length).toBeGreaterThan(0);
     expect(sanitized.quarantined).toBeGreaterThan(0);
+  });
+});
+
+describe('runtime state recovery flows', () => {
+  it('recovers initialization from an invalid saved model id', () => {
+    const schemaBundle = loadSchemaBundle();
+    const models = loadModels();
+    const state = createInitializedState({
+      schemaBundle,
+      models,
+      systemPresets: [],
+      settingsRecord: {
+        storageVersion: '0.0.0',
+        schemaVersion: '0.0.0',
+        value: {
+          selectedModelId: 'missing-model',
+          formValues: {
+            characterType: 'female'
+          }
+        }
+      },
+      userPresetRecord: { value: [] },
+      galleryEntries: []
+    });
+
+    expect(state.selectedModelId).toBe('chroma1-hd');
+    expect(state.loading).toBe(false);
+    expect(state.error).toBe('');
+    expect(state.actionStatus.toLowerCase()).toContain('recovered');
+  });
+
+  it('restores preset and gallery payloads without throwing on unknown values', () => {
+    const schemaBundle = loadSchemaBundle();
+    const models = loadModels();
+    const restored = restorePersistedSelection({
+      schemaBundle,
+      models,
+      selectedModelId: 'chroma1-hd',
+      activeCategoryId: 'identity',
+      locks: {},
+      entryLabel: 'gallery entry',
+      payload: {
+        selectedModelId: 'missing-model',
+        formValues: {
+          characterType: 'female',
+          eyeColor: 'missing-eye-color'
+        }
+      }
+    });
+
+    expect(restored.selectedModelId).toBe('chroma1-hd');
+    expect(restored.formValues.eyeColor).not.toBe('missing-eye-color');
+    expect(restored.actionStatus.toLowerCase()).toContain('recovered');
+  });
+
+  it('quarantines malformed imports instead of merging them into saved presets', () => {
+    const schemaBundle = loadSchemaBundle();
+    const models = loadModels();
+    const imported = mergeImportedPresets({
+      schemaBundle,
+      models,
+      systemPresets: [],
+      userPresets: [
+        {
+          id: 'existing',
+          type: 'user',
+          name: 'Existing preset',
+          selectedModelId: 'chroma1-hd',
+          formValues: {
+            characterType: 'female'
+          }
+        }
+      ],
+      selectedModelId: 'chroma1-hd',
+      importedPresets: {
+        nope: true
+      }
+    });
+
+    expect(imported.userPresets).toHaveLength(1);
+    expect(imported.actionStatus.toLowerCase()).toContain('quarantined');
   });
 });
