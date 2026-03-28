@@ -22,8 +22,15 @@ describe('Venice userscript asset', () => {
 
   it('retries pending requests and prefers the newest unseen Venice image', () => {
     expect(userscript).toContain('replayPendingRequest()');
-    expect(userscript).toContain('seenImageUrls');
-    expect(userscript).toContain('images.reverse().find');
+    expect(userscript).toContain('getLatestVeniceImageSrc()');
+    expect(userscript).toContain('waitForNewVeniceImage(previousSrc)');
+    expect(userscript).toContain('previousSrc');
     expect(userscript).toContain("status: 'resuming-image-transfer'");
+  });
+
+  it('captures image dimensions and waits for a post-submit image change', () => {
+    expect(userscript).toContain('width: latestImage.naturalWidth || null');
+    expect(userscript).toContain('height: latestImage.naturalHeight || null');
+    expect(userscript).toContain('image transfer failed');
   });
 });

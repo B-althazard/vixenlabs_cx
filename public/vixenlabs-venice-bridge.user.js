@@ -232,21 +232,47 @@
     return null;
   }
 
-  async function waitForImageResult(job) {
-    const start = Date.now();
-    const seenImageUrls = new Set();
+  function getLatestVeniceImageSrc() {
+    const images = Array.from(document.querySelectorAll(SELECTORS.veniceImage.join(', ')));
+    const last = images[images.length - 1];
+    return last?.currentSrc || last?.src || '';
+  }
 
+  async function waitForNewVeniceImage(previousSrc) {
+    const start = Date.now();
     while (Date.now() - start < CONFIG.imageWaitMs) {
       const images = Array.from(document.querySelectorAll(SELECTORS.veniceImage.join(', ')));
-      const latestImage = images.reverse().find((candidate) => {
-        const imageUrl = candidate?.currentSrc || candidate?.src || '';
-        return imageUrl && !seenImageUrls.has(imageUrl);
-      });
-      const imageUrl = latestImage?.currentSrc || latestImage?.src || '';
+      const last = images[images.length - 1];
+      const imageUrl = last?.currentSrc || last?.src || '';
 
-      if (imageUrl) {
-        seenImageUrls.add(imageUrl);
-        const dataUrl = await fetchImageDataUrl(imageUrl);
+      if (last && imageUrl && imageUrl !== previousSrc && last.complete) {
+        return last;
+      }
+
+      await sleep(500);
+    }
+
+    return null;
+  }
+
+  async function imageElementToDataUrl(image) {
+    const imageUrl = image?.currentSrc || image?.src || '';
+    if (!imageUrl) {
+      throw new Error('image src missing');
+    }
+
+    return fetchImageDataUrl(imageUrl);
+  }
+
+  async function waitForImageResult(job) {
+    const start = Date.now();
+    const previousSrc = job?.previousSrc || '';
+
+    while (Date.now() - start < CONFIG.imageWaitMs) {
+      const latestImage = await waitForNewVeniceImage(previousSrc);
+
+      if (latestImage) {
+        const dataUrl = await imageElementToDataUrl(latestImage);
         publishImage({
           nonce: job.nonce,
           ts: Date.now(),
@@ -256,19 +282,16 @@
           negativePrompt: job.negativePrompt || '',
           settings: job.settings || null,
           meta: job.meta || null,
-          model: job.settings?.model || null
+          model: job.settings?.model || null,
+          width: latestImage.naturalWidth || null,
+          height: latestImage.naturalHeight || null,
+          mime: 'image/png'
         });
         clearActiveJob(job.nonce);
         return;
       }
 
-      publishStatus({
-        nonce: job.nonce,
-        status: 'waiting for image',
-        detail: 'Venice is still generating.'
-      });
-
-      await sleep(1000);
+      break;
     }
 
     publishStatus({
@@ -293,6 +316,7 @@
         ...request,
         nonce: request.nonce,
         prompt: request.prompt,
+        previousSrc: getActiveJob()?.previousSrc || '',
         status: 'resuming-image-transfer'
       });
       handleVeniceJob(request);
@@ -379,12 +403,22 @@
       return;
     }
 
+    const previousSrc = getLatestVeniceImageSrc();
     publishStatus({ nonce: job.nonce, status: 'submitting', detail: 'Submitting to Venice.' });
     submit.click();
     publishStatus({ nonce: job.nonce, status: 'submitted', detail: 'Venice request submitted.' });
 
+    setActiveJob({
+      ...job,
+      previousSrc,
+      status: 'submitted'
+    });
+
     try {
-      await waitForImageResult(job);
+      await waitForImageResult({
+        ...job,
+        previousSrc
+      });
     } catch (error) {
       publishError({
         nonce: job.nonce,
