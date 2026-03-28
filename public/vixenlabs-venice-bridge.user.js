@@ -140,18 +140,6 @@
     dispatchPageEvent(BRIDGE_EVENTS.heartbeat, detail);
   }
 
-  function getImagePayload() {
-    return GM_getValue(KEYS.RESULT, null);
-  }
-
-  function getStatusPayload() {
-    return GM_getValue(KEYS.STATUS, null);
-  }
-
-  function getErrorPayload() {
-    return GM_getValue(KEYS.ERROR, null);
-  }
-
   function otherHeartbeatKey() {
     return isApp() ? KEYS.HEARTBEAT_VENICE : KEYS.HEARTBEAT_APP;
   }
@@ -261,8 +249,14 @@
         const dataUrl = await fetchImageDataUrl(imageUrl);
         publishImage({
           nonce: job.nonce,
+          ts: Date.now(),
           detail: 'Image transferred',
-          dataUrl
+          dataUrl,
+          prompt: job.prompt,
+          negativePrompt: job.negativePrompt || '',
+          settings: job.settings || null,
+          meta: job.meta || null,
+          model: job.settings?.model || null
         });
         clearActiveJob(job.nonce);
         return;
@@ -294,6 +288,13 @@
     }
 
     window.setTimeout(() => {
+      setActiveJob({
+        ...(getActiveJob() || {}),
+        ...request,
+        nonce: request.nonce,
+        prompt: request.prompt,
+        status: 'resuming-image-transfer'
+      });
       handleVeniceJob(request);
       GM_setValue(KEYS.LAST_PROCESSED_NONCE, request.nonce);
     }, CONFIG.replayWaitMs);
@@ -312,14 +313,20 @@
       }
     });
 
-    GM_addValueChangeListener(KEYS.RESULT, (_key, _oldValue, value) => {
-      const payload = value && typeof value === 'object'
-        ? value
-        : value
+    GM_addValueChangeListener(KEYS.RESULT_NONCE, (_key, oldValue, value) => {
+      if (!value || value === oldValue) {
+        return;
+      }
+
+      const stored = GM_getValue(KEYS.RESULT, null);
+      const payload = stored && typeof stored === 'object'
+        ? stored
+        : stored
           ? {
-            nonce: GM_getValue(KEYS.RESULT_NONCE, null),
+            nonce: value,
+            ts: Date.now(),
             detail: 'Image transferred',
-            dataUrl: value
+            dataUrl: stored
           }
           : null;
 
