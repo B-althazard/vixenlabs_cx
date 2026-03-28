@@ -1,6 +1,6 @@
 {
-  "version": "0.1.0",
-  "generatedAt": "2026-03-27",
+  "version": "0.1.1",
+  "generatedAt": "2026-03-28",
   "categories": [
     { "id": "identity", "label": "Identity", "icon": "ID", "visible": true, "file": "/schema/categories/identity.json" },
     { "id": "face", "label": "Face", "icon": "FC", "visible": true, "file": "/schema/categories/face.json" },

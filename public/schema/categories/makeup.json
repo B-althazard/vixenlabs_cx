@@ -10,7 +10,7 @@
     { "id": "blush", "label": "Blush", "type": "single-select", "promptPriority": 61, "options": [
       { "id": "peach", "label": "Peach", "promptValue": "peach blush" },
       { "id": "rose", "label": "Rose", "promptValue": "rose blush" },
-      { "id": "placeholder-sunflush", "label": "Sunflush", "promptValue": "sun-kissed blush", "placeholder": true }
+      { "id": "sunflush", "label": "Sunflush", "promptValue": "sun-kissed blush" }
     ]},
     { "id": "lipColor", "label": "Lip Color", "type": "single-select", "promptPriority": 62, "options": [
       { "id": "nude", "label": "Nude", "promptValue": "nude lipstick" },

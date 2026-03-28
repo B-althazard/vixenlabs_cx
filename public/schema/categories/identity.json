@@ -35,7 +35,7 @@
         { "id": "nordic", "label": "Nordic", "promptValue": "nordic features" },
         { "id": "latina", "label": "Latina", "promptValue": "latina features" },
         { "id": "east-asian", "label": "East Asian", "promptValue": "east asian features" },
-        { "id": "placeholder-mixed", "label": "Mixed Heritage", "promptValue": "mixed heritage features", "placeholder": true }
+        { "id": "mixed-heritage", "label": "Mixed Heritage", "promptValue": "mixed heritage features" }
       ]
     }
   ]

@@ -25,7 +25,7 @@
     { "id": "tattoos", "label": "Tattoos", "type": "multi-select", "maxSelections": 2, "promptPriority": 54, "options": [
       { "id": "none", "label": "None", "promptValue": "clean skin" },
       { "id": "arm-ink", "label": "Arm Ink", "promptValue": "arm tattoos" },
-      { "id": "placeholder-fine-line", "label": "Fine Line", "promptValue": "fine line tattoos", "placeholder": true }
+      { "id": "fine-line", "label": "Fine Line", "promptValue": "fine line tattoos" }
     ]}
   ]
 }

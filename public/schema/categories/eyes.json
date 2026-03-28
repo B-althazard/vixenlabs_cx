@@ -30,7 +30,7 @@
     { "id": "eyeMakeup", "label": "Eye Makeup", "type": "multi-select", "maxSelections": 2, "promptPriority": 33, "options": [
       { "id": "winged-liner", "label": "Winged Liner", "promptValue": "winged eyeliner" },
       { "id": "shimmer-shadow", "label": "Shimmer Shadow", "promptValue": "shimmer eyeshadow" },
-      { "id": "placeholder-soft-smoke", "label": "Soft Smoke", "promptValue": "soft smoky eyes", "placeholder": true }
+      { "id": "soft-smoke", "label": "Soft Smoke", "promptValue": "soft smoky eyes" }
     ]}
   ]
 }

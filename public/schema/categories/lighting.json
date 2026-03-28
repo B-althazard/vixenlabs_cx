@@ -5,12 +5,12 @@
     { "id": "lightStyle", "label": "Light Style", "type": "single-select", "promptPriority": 100, "options": [
       { "id": "soft-daylight", "label": "Soft Daylight", "promptValue": "soft daylight", "incompatibleWith": ["shadowMood:dramatic"] },
       { "id": "golden-hour", "label": "Golden Hour", "promptValue": "golden hour lighting" },
-      { "id": "neon-rim", "label": "Neon Rim", "promptValue": "neon rim lighting", "suggests": ["locationType:placeholder-neon-loft"], "incompatibleWith": ["locationType:beach-suite"] }
+      { "id": "neon-rim", "label": "Neon Rim", "promptValue": "neon rim lighting", "suggests": ["locationType:neon-loft"], "incompatibleWith": ["locationType:beach-suite"] }
     ]},
     { "id": "shadowMood", "label": "Shadow Mood", "type": "single-select", "promptPriority": 101, "options": [
       { "id": "clean", "label": "Clean", "promptValue": "clean soft shadows" },
       { "id": "dramatic", "label": "Dramatic", "promptValue": "dramatic shadows", "incompatibleWith": ["lightStyle:soft-daylight"] },
-      { "id": "placeholder-filmic", "label": "Filmic", "promptValue": "filmic shadow contrast", "placeholder": true }
+      { "id": "filmic", "label": "Filmic", "promptValue": "filmic shadow contrast" }
     ]}
   ]
 }

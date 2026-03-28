@@ -15,7 +15,7 @@
     { "id": "noseShape", "label": "Nose Shape", "type": "single-select", "promptPriority": 22, "options": [
       { "id": "button", "label": "Button", "promptValue": "button nose" },
       { "id": "straight", "label": "Straight", "promptValue": "straight nose" },
-      { "id": "placeholder-refined", "label": "Refined", "promptValue": "refined nose", "placeholder": true }
+      { "id": "refined", "label": "Refined", "promptValue": "refined nose" }
     ]},
     { "id": "lipShape", "label": "Lips", "type": "single-select", "promptPriority": 23, "options": [
       { "id": "natural", "label": "Natural", "promptValue": "natural lips" },

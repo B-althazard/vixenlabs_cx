@@ -20,7 +20,7 @@
     { "id": "lingerieCoverage", "label": "Coverage", "type": "single-select", "promptPriority": 73, "options": [
       { "id": "teasing", "label": "Teasing", "promptValue": "teasing cut" },
       { "id": "balanced", "label": "Balanced", "promptValue": "balanced coverage" },
-      { "id": "placeholder-bold", "label": "Bold", "promptValue": "bold revealing cut", "placeholder": true }
+      { "id": "bold", "label": "Bold", "promptValue": "bold revealing cut" }
     ]},
     { "id": "stockings", "label": "Stockings", "type": "single-select", "promptPriority": 74, "options": [
       { "id": "none", "label": "None", "promptValue": "bare legs" },

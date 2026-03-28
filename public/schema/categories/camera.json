@@ -15,7 +15,7 @@
     { "id": "lensFeel", "label": "Lens Feel", "type": "single-select", "promptPriority": 112, "options": [
       { "id": "50mm", "label": "50mm", "promptValue": "50mm lens look" },
       { "id": "85mm", "label": "85mm", "promptValue": "85mm lens look" },
-      { "id": "placeholder-cinematic-35", "label": "35mm Cine", "promptValue": "cinematic 35mm lens look", "placeholder": true }
+      { "id": "cinematic-35", "label": "35mm Cine", "promptValue": "cinematic 35mm lens look" }
     ]}
   ]
 }

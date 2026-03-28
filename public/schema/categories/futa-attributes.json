@@ -8,7 +8,7 @@
     ]},
     { "id": "futaSize", "label": "Size", "type": "single-select", "promptPriority": 121, "options": [
       { "id": "balanced", "label": "Balanced", "promptValue": "proportional size" },
-      { "id": "placeholder-bold", "label": "Bold", "promptValue": "pronounced size", "placeholder": true }
+      { "id": "pronounced", "label": "Pronounced", "promptValue": "pronounced size" }
     ]}
   ]
 }
