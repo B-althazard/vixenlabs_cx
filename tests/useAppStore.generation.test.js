@@ -8,7 +8,28 @@ const unsubscribeBridge = vi.fn();
 let bridgeHandlers = null;
 
 vi.mock('dexie', () => {
+  const rows = [];
+
   class DexieMock {
+    constructor() {
+      this.images = {
+        put: vi.fn(async (entry) => {
+          const existingIndex = rows.findIndex((row) => row.id === entry.id || row.nonce === entry.nonce);
+          if (existingIndex >= 0) {
+            rows.splice(existingIndex, 1, entry);
+          } else {
+            rows.push(entry);
+          }
+          return entry.id || entry.nonce;
+        }),
+        orderBy: vi.fn(() => ({
+          reverse: () => ({
+            toArray: async () => [...rows].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+          })
+        }))
+      };
+    }
+
     version() {
       return {
         stores() {
@@ -205,6 +226,32 @@ describe('useAppStore generation flow', async () => {
       status: 'failed'
     });
     expect(useAppStore.getState().actionStatus).toMatch(/recovery/i);
+  });
+
+  it('persists successful image results into gallery state immediately', async () => {
+    const state = useAppStore.getState();
+    state.setupGenerationBridge();
+    bridgeHandlers.onReady({ source: 'userscript' });
+
+    await state.submitGeneration();
+    const job = useAppStore.getState().generationJobs[0];
+
+    await bridgeHandlers.onImage({
+      nonce: job.nonce,
+      detail: 'Image received',
+      dataUrl: 'data:image/png;base64,abc123'
+    });
+
+    expect(useAppStore.getState().generationJobs[0]).toMatchObject({
+      nonce: job.nonce,
+      status: 'succeeded',
+      resultDataUrl: 'data:image/png;base64,abc123'
+    });
+    expect(useAppStore.getState().gallery[0]).toMatchObject({
+      nonce: job.nonce,
+      status: 'succeeded',
+      resultDataUrl: 'data:image/png;base64,abc123'
+    });
   });
 
 });

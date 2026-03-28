@@ -107,8 +107,8 @@ export const useAppStore = create((set, get) => ({
       onStatus: (payload) => {
         applyNormalizedJobUpdate(set, get, normalizeBridgeStatus(payload));
       },
-      onImage: (payload) => {
-        handleGenerationImage(set, get, payload);
+      onImage: async (payload) => {
+        await handleGenerationImage(set, get, payload);
       },
       onError: (payload) => {
         handleGenerationError(set, get, payload);
@@ -622,7 +622,7 @@ function applyNormalizedJobUpdate(set, get, normalized) {
   }
 }
 
-function handleGenerationImage(set, get, payload) {
+async function handleGenerationImage(set, get, payload) {
   const nonce = payload?.nonce;
   if (!nonce) {
     set({ actionStatus: buildGenerationFailureMessage('Result payload missing nonce.') });
@@ -640,6 +640,21 @@ function handleGenerationImage(set, get, payload) {
     return;
   }
 
+  const persistedEntry = {
+    ...matchingJob,
+    status: 'succeeded',
+    detail: payload.detail || 'Image received',
+    completedAt: new Date().toISOString(),
+    resultDataUrl: payload.dataUrl,
+    canRetry: false,
+    errorMessage: '',
+    createdAt: matchingJob.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  await galleryDb.images.put(persistedEntry);
+  const gallery = await galleryDb.images.orderBy('createdAt').reverse().toArray();
+
   set((state) => ({
     generationJobs: updateGenerationJobs(state.generationJobs, nonce, (job) => ({
       ...job,
@@ -650,6 +665,7 @@ function handleGenerationImage(set, get, payload) {
       canRetry: false,
       errorMessage: ''
     })),
+    gallery,
     actionStatus: 'Venice image received'
   }));
 }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Vixen Labs CX -> Venice Bridge
 // @namespace    https://b-althazard.github.io/
-// @version      1.1.0
+// @version      1.1.1
 // @description  Bridges Vixen Labs CX to Venice.ai for automated image generation
 // @match        https://b-althazard.github.io/vixenlabs_cx/*
 // @match        https://venice.ai/*
