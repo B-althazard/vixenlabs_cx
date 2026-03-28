@@ -10,7 +10,7 @@ This roadmap turns the existing React/Vite creator from a promising local-first 
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Trusted Schema & Runtime Boundaries** - Make approved content, validation, migrations, and runtime freshness safe enough for production use.
+- [x] **Phase 1: Trusted Schema & Runtime Boundaries** - Make approved content, validation, migrations, and runtime freshness safe enough for production use. Completed 2026-03-28.
 - [ ] **Phase 2: Venice Generation Workflow** - Deliver a trustworthy Venice-backed job flow with accurate controls, payloads, and recovery states.
 - [ ] **Phase 3: Real Gallery & Preset Persistence** - Turn generated outputs into durable reusable gallery items and presets across sessions.
 - [ ] **Phase 4: Mobile-First Creator Flow** - Finish the phone-first interaction model without breaking the desktop workflow.
@@ -28,9 +28,9 @@ This roadmap turns the existing React/Vite creator from a promising local-first 
   4. User receives fresh schema, model, and preset data after releases without the service worker trapping the app on stale runtime JSON indefinitely.
 **Plans**: 3 plans
 Plans:
-- [ ] 01-trusted-schema-runtime-boundaries/01-01-PLAN.md — Validate schema/model/preset assets and remove Phase 1 placeholder content.
-- [ ] 01-trusted-schema-runtime-boundaries/01-02-PLAN.md — Sanitize, migrate, and quarantine invalid persisted state safely.
-- [ ] 01-trusted-schema-runtime-boundaries/01-03-PLAN.md — Fix PWA/runtime freshness for schema, model, and preset updates.
+- [x] 01-trusted-schema-runtime-boundaries/01-01-PLAN.md — Validate schema/model/preset assets and remove Phase 1 placeholder content.
+- [x] 01-trusted-schema-runtime-boundaries/01-02-PLAN.md — Sanitize, migrate, and quarantine invalid persisted state safely.
+- [x] 01-trusted-schema-runtime-boundaries/01-03-PLAN.md — Fix PWA/runtime freshness for schema, model, and preset updates.
 **UI hint**: yes
 
 ### Phase 2: Venice Generation Workflow

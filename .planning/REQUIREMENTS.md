@@ -38,7 +38,7 @@ Requirements for the current roadmap. These focus on turning the existing brownf
 
 ### Runtime Reliability
 
-- [ ] **RUNTIME-01**: User can receive schema, model, and preset updates without the service worker serving stale runtime JSON indefinitely
+- [x] **RUNTIME-01**: User can receive schema, model, and preset updates without the service worker serving stale runtime JSON indefinitely
 - [ ] **RUNTIME-02**: User can recover from storage or browser-automation failures with a clear status message instead of a broken or ambiguous session
 
 ## v2 Requirements
@@ -92,7 +92,7 @@ Which phases cover which requirements. This is updated during roadmap creation.
 | MOBILE-01 | Phase 4 | Pending |
 | MOBILE-02 | Phase 4 | Pending |
 | MOBILE-03 | Phase 4 | Pending |
-| RUNTIME-01 | Phase 1 | Pending |
+| RUNTIME-01 | Phase 1 | Complete |
 | RUNTIME-02 | Phase 2 | Pending |
 
 **Coverage:**
@@ -102,4 +102,4 @@ Which phases cover which requirements. This is updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after roadmap creation*
+*Last updated: 2026-03-28 after Phase 1 completion*
