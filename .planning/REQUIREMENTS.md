@@ -16,8 +16,8 @@ Requirements for the current roadmap. These focus on turning the existing brownf
 
 ### Generation
 
-- [ ] **GEN-01**: User can submit the current character configuration to a Venice-backed generation flow and start an image job from the app
-- [ ] **GEN-02**: User can see generation state for each job, including queued, running, succeeded, failed, and retryable outcomes
+- [x] **GEN-01**: User can submit the current character configuration to a Venice-backed generation flow and start an image job from the app
+- [x] **GEN-02**: User can see generation state for each job, including queued, running, succeeded, failed, and retryable outcomes
 - [x] **GEN-03**: User can configure only supported generation controls for the active provider or model, including model choice and any supported size, seed, variants, style, and negative prompt options
 - [x] **GEN-04**: User can trust that the prompt output panel shows exactly the resolved payload used for generation, without hard-coded extra properties
 - [ ] **GEN-05**: User can retry or recover a generation job without accidentally attaching the wrong result to the wrong character snapshot
@@ -39,7 +39,7 @@ Requirements for the current roadmap. These focus on turning the existing brownf
 ### Runtime Reliability
 
 - [x] **RUNTIME-01**: User can receive schema, model, and preset updates without the service worker serving stale runtime JSON indefinitely
-- [ ] **RUNTIME-02**: User can recover from storage or browser-automation failures with a clear status message instead of a broken or ambiguous session
+- [x] **RUNTIME-02**: User can recover from storage or browser-automation failures with a clear status message instead of a broken or ambiguous session
 
 ## v2 Requirements
 
@@ -79,8 +79,8 @@ Which phases cover which requirements. This is updated during roadmap creation.
 | SCHEMA-02 | Phase 1 | Complete |
 | SCHEMA-03 | Phase 1 | Complete |
 | SCHEMA-04 | Phase 1 | Complete |
-| GEN-01 | Phase 2 | Pending |
-| GEN-02 | Phase 2 | Pending |
+| GEN-01 | Phase 2 | Complete |
+| GEN-02 | Phase 2 | Complete |
 | GEN-03 | Phase 2 | Complete |
 | GEN-04 | Phase 2 | Complete |
 | GEN-05 | Phase 2 | Pending |
@@ -93,7 +93,7 @@ Which phases cover which requirements. This is updated during roadmap creation.
 | MOBILE-02 | Phase 4 | Pending |
 | MOBILE-03 | Phase 4 | Pending |
 | RUNTIME-01 | Phase 1 | Complete |
-| RUNTIME-02 | Phase 2 | Pending |
+| RUNTIME-02 | Phase 2 | Complete |
 
 **Coverage:**
 - v1 requirements: 19 total

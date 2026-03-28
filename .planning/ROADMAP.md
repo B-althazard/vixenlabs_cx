@@ -82,6 +82,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Trusted Schema & Runtime Boundaries | 3/3 | Complete | 2026-03-28 |
-| 2. Venice Generation Workflow | 1/3 | In Progress | - |
+| 2. Venice Generation Workflow | 2/3 | In Progress | - |
 | 3. Real Gallery & Preset Persistence | 0/TBD | Not started | - |
 | 4. Mobile-First Creator Flow | 0/TBD | Not started | - |
