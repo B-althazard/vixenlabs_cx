@@ -206,4 +206,5 @@ describe('useAppStore generation flow', async () => {
     });
     expect(useAppStore.getState().actionStatus).toMatch(/recovery/i);
   });
+
 });

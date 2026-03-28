@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Vixen Labs CX -> Venice Bridge
 // @namespace    https://b-althazard.github.io/
-// @version      1.0.0
+// @version      1.1.0
 // @description  Bridges Vixen Labs CX to Venice.ai for automated image generation
 // @match        https://b-althazard.github.io/vixenlabs_cx/*
 // @match        https://venice.ai/*
@@ -57,6 +57,8 @@
       'form button[type="submit"]'
     ],
     veniceImage: [
+      '[data-message-author-role="assistant"] img[src^="blob:"]',
+      '[data-role="assistant"] img[src^="blob:"]',
       '.image-message img',
       'img[alt*="generated" i]',
       'img[src^="blob:"]',
@@ -70,7 +72,8 @@
     imageWaitMs: 120000,
     heartbeatMs: 1500,
     connectionFreshMs: 4500,
-    clickDelayMs: 80
+    clickDelayMs: 80,
+    replayWaitMs: 600
   };
 
   function isApp() {
@@ -111,14 +114,21 @@
   }
 
   function publishStatus(payload) {
+    GM_setValue(KEYS.STATUS, payload);
+    GM_setValue(KEYS.TIMESTAMP, Date.now());
     dispatchPageEvent(BRIDGE_EVENTS.status, payload);
   }
 
   function publishError(payload) {
+    GM_setValue(KEYS.ERROR, payload);
+    GM_setValue(KEYS.TIMESTAMP, Date.now());
     dispatchPageEvent(BRIDGE_EVENTS.error, payload);
   }
 
   function publishImage(payload) {
+    GM_setValue(KEYS.RESULT_NONCE, payload?.nonce || null);
+    GM_setValue(KEYS.RESULT, payload || null);
+    GM_setValue(KEYS.LAST_TRANSFER_TS, Date.now());
     dispatchPageEvent(BRIDGE_EVENTS.image, payload);
   }
 
@@ -128,6 +138,18 @@
 
   function publishHeartbeat(detail = {}) {
     dispatchPageEvent(BRIDGE_EVENTS.heartbeat, detail);
+  }
+
+  function getImagePayload() {
+    return GM_getValue(KEYS.RESULT, null);
+  }
+
+  function getStatusPayload() {
+    return GM_getValue(KEYS.STATUS, null);
+  }
+
+  function getErrorPayload() {
+    return GM_getValue(KEYS.ERROR, null);
   }
 
   function otherHeartbeatKey() {
@@ -224,18 +246,19 @@
 
   async function waitForImageResult(job) {
     const start = Date.now();
-    let lastImageUrl = '';
+    const seenImageUrls = new Set();
 
     while (Date.now() - start < CONFIG.imageWaitMs) {
-      const image = queryFirst(SELECTORS.veniceImage);
-      const imageUrl = image?.currentSrc || image?.src || '';
+      const images = Array.from(document.querySelectorAll(SELECTORS.veniceImage.join(', ')));
+      const latestImage = images.reverse().find((candidate) => {
+        const imageUrl = candidate?.currentSrc || candidate?.src || '';
+        return imageUrl && !seenImageUrls.has(imageUrl);
+      });
+      const imageUrl = latestImage?.currentSrc || latestImage?.src || '';
 
-      if (imageUrl && imageUrl !== lastImageUrl) {
-        lastImageUrl = imageUrl;
+      if (imageUrl) {
+        seenImageUrls.add(imageUrl);
         const dataUrl = await fetchImageDataUrl(imageUrl);
-        GM_setValue(KEYS.RESULT_NONCE, job.nonce);
-        GM_setValue(KEYS.RESULT, dataUrl);
-        GM_setValue(KEYS.LAST_TRANSFER_TS, Date.now());
         publishImage({
           nonce: job.nonce,
           detail: 'Image transferred',
@@ -258,6 +281,51 @@
       nonce: job.nonce,
       status: 'image transfer failed',
       detail: 'Timed out waiting for a Venice image result.'
+    });
+  }
+
+  function replayPendingRequest() {
+    const request = GM_getValue(KEYS.REQUEST, null);
+    const nonce = GM_getValue(KEYS.REQUEST_NONCE, null);
+    const lastProcessed = GM_getValue(KEYS.LAST_PROCESSED_NONCE, null);
+
+    if (!request?.nonce || !nonce || nonce === lastProcessed) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      handleVeniceJob(request);
+      GM_setValue(KEYS.LAST_PROCESSED_NONCE, request.nonce);
+    }, CONFIG.replayWaitMs);
+  }
+
+  function syncAppSideFromStorage() {
+    GM_addValueChangeListener(KEYS.STATUS, (_key, _oldValue, value) => {
+      if (value) {
+        dispatchPageEvent(BRIDGE_EVENTS.status, value);
+      }
+    });
+
+    GM_addValueChangeListener(KEYS.ERROR, (_key, _oldValue, value) => {
+      if (value) {
+        dispatchPageEvent(BRIDGE_EVENTS.error, value);
+      }
+    });
+
+    GM_addValueChangeListener(KEYS.RESULT, (_key, _oldValue, value) => {
+      const payload = value && typeof value === 'object'
+        ? value
+        : value
+          ? {
+            nonce: GM_getValue(KEYS.RESULT_NONCE, null),
+            detail: 'Image transferred',
+            dataUrl: value
+          }
+          : null;
+
+      if (payload) {
+        dispatchPageEvent(BRIDGE_EVENTS.image, payload);
+      }
     });
   }
 
@@ -319,6 +387,8 @@
   }
 
   function bootAppSide() {
+    syncAppSideFromStorage();
+
     window.addEventListener(BRIDGE_EVENTS.generate, (event) => {
       const request = event.detail || {};
       if (!request.nonce) {
@@ -363,6 +433,11 @@
       await handleVeniceJob(request);
     });
 
+    GM_addValueChangeListener(KEYS.HEARTBEAT_APP, () => {
+      emitBridgeReadyIfFresh();
+      replayPendingRequest();
+    });
+
     document.addEventListener('visibilitychange', () => {
       const job = getActiveJob();
       if (!job) {
@@ -379,6 +454,7 @@
     });
 
     emitBridgeReadyIfFresh();
+    replayPendingRequest();
     setInterval(markHeartbeat, CONFIG.heartbeatMs);
     markHeartbeat();
   }
