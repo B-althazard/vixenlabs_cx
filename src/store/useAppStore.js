@@ -31,7 +31,8 @@ export const useAppStore = create((set, get) => ({
   error: '',
   async initialize() {
     try {
-      const [schemaBundle, models, systemPresets] = await Promise.all([loadSchemaBundle(), loadModels(), loadSystemPresets()]);
+      const [schemaBundle, models] = await Promise.all([loadSchemaBundle(), loadModels()]);
+      const systemPresets = await loadSystemPresets(schemaBundle, models);
       const settings = loadSettings();
       const userPresets = loadUserPresets();
       const defaultValues = createDefaultFormValues(schemaBundle);

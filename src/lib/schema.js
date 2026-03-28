@@ -1,3 +1,9 @@
+import {
+  validateModels,
+  validateSchemaBundle,
+  validateSystemPresets
+} from './contentValidation';
+
 export async function loadJson(path) {
   const normalizedPath = path.replace(/^\//, '');
   const response = await fetch(`${import.meta.env.BASE_URL}${normalizedPath}`);
@@ -16,10 +22,10 @@ export async function loadSchemaBundle() {
     }))
   );
 
-  return {
+  return validateSchemaBundle({
     ...manifest,
     categories
-  };
+  });
 }
 
 export async function loadModels() {
@@ -32,14 +38,15 @@ export async function loadModels() {
 
   const models = await Promise.all(files.map(loadJson));
 
-  return models.reduce((accumulator, model) => {
+  return validateModels(models.reduce((accumulator, model) => {
     accumulator[model.id] = model;
     return accumulator;
-  }, {});
+  }, {}));
 }
 
-export async function loadSystemPresets() {
-  return loadJson('/presets/system-presets.json');
+export async function loadSystemPresets(schemaBundle, models) {
+  const systemPresets = await loadJson('/presets/system-presets.json');
+  return validateSystemPresets(systemPresets, schemaBundle, models);
 }
 
 export function flattenSchema(schemaBundle) {
