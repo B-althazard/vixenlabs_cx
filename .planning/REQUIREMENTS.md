@@ -20,7 +20,7 @@ Requirements for the current roadmap. These focus on turning the existing brownf
 - [x] **GEN-02**: User can see generation state for each job, including queued, running, succeeded, failed, and retryable outcomes
 - [x] **GEN-03**: User can configure only supported generation controls for the active provider or model, including model choice and any supported size, seed, variants, style, and negative prompt options
 - [x] **GEN-04**: User can trust that the prompt output panel shows exactly the resolved payload used for generation, without hard-coded extra properties
-- [ ] **GEN-05**: User can retry or recover a generation job without accidentally attaching the wrong result to the wrong character snapshot
+- [x] **GEN-05**: User can retry or recover a generation job without accidentally attaching the wrong result to the wrong character snapshot
 
 ### Gallery and Presets
 
@@ -83,7 +83,7 @@ Which phases cover which requirements. This is updated during roadmap creation.
 | GEN-02 | Phase 2 | Complete |
 | GEN-03 | Phase 2 | Complete |
 | GEN-04 | Phase 2 | Complete |
-| GEN-05 | Phase 2 | Pending |
+| GEN-05 | Phase 2 | Complete |
 | GAL-01 | Phase 3 | Pending |
 | GAL-02 | Phase 3 | Pending |
 | GAL-03 | Phase 3 | Pending |

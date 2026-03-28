@@ -11,7 +11,7 @@ This roadmap turns the existing React/Vite creator from a promising local-first 
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Trusted Schema & Runtime Boundaries** - Make approved content, validation, migrations, and runtime freshness safe enough for production use. Completed 2026-03-28.
-- [ ] **Phase 2: Venice Generation Workflow** - Deliver a trustworthy Venice-backed job flow with accurate controls, payloads, and recovery states.
+- [x] **Phase 2: Venice Generation Workflow** - Deliver a trustworthy Venice-backed job flow with accurate controls, payloads, and recovery states. Completed 2026-03-28.
 - [ ] **Phase 3: Real Gallery & Preset Persistence** - Turn generated outputs into durable reusable gallery items and presets across sessions.
 - [ ] **Phase 4: Mobile-First Creator Flow** - Finish the phone-first interaction model without breaking the desktop workflow.
 
@@ -44,10 +44,9 @@ Plans:
   4. User can retry or recover a generation without attaching the wrong image result to the wrong character snapshot.
 **Plans**: 3 plans
 Plans:
-- [ ] 02-venice-generation-workflow/02-01-PLAN.md — Add config-driven Venice payload contracts and model capability metadata.
 - [x] 02-venice-generation-workflow/02-01-PLAN.md — Add config-driven Venice payload contracts and model capability metadata.
-- [ ] 02-venice-generation-workflow/02-02-PLAN.md — Build the app-side Venice bridge adapter and lifecycle normalization.
-- [ ] 02-venice-generation-workflow/02-03-PLAN.md — Wire store/UI submission, status, retry, and nonce-safe result attachment.
+- [x] 02-venice-generation-workflow/02-02-PLAN.md — Build the app-side Venice bridge adapter and lifecycle normalization.
+- [x] 02-venice-generation-workflow/02-03-PLAN.md — Wire store/UI submission, status, retry, and nonce-safe result attachment.
 **UI hint**: yes
 
 ### Phase 3: Real Gallery & Preset Persistence
@@ -82,6 +81,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Trusted Schema & Runtime Boundaries | 3/3 | Complete | 2026-03-28 |
-| 2. Venice Generation Workflow | 2/3 | In Progress | - |
+| 2. Venice Generation Workflow | 3/3 | Complete | 2026-03-28 |
 | 3. Real Gallery & Preset Persistence | 0/TBD | Not started | - |
 | 4. Mobile-First Creator Flow | 0/TBD | Not started | - |
