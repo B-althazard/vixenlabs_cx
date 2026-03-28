@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   dispatchGenerationRequest,
+  normalizeBridgeStatus,
   subscribeToVeniceBridge
 } from '../src/lib/veniceBridge.js';
 
@@ -81,5 +82,78 @@ describe('venice bridge adapter', () => {
     window.dispatchEvent(new CustomEvent('xgen:status-update', { detail: { index: 99 } }));
 
     expect(received).toHaveLength(5);
+  });
+
+  it('maps submitted and image-wait lifecycle phrases to non-terminal app states', () => {
+    expect(normalizeBridgeStatus({ status: 'submitted', nonce: 'nonce-2' })).toMatchObject({
+      nonce: 'nonce-2',
+      status: 'queued',
+      canRetry: false,
+      terminal: false
+    });
+
+    expect(normalizeBridgeStatus({ status: 'waiting for image', nonce: 'nonce-2' })).toMatchObject({
+      nonce: 'nonce-2',
+      status: 'running',
+      canRetry: false,
+      terminal: false
+    });
+
+    expect(normalizeBridgeStatus({ status: 'extracting image', nonce: 'nonce-2' })).toMatchObject({
+      nonce: 'nonce-2',
+      status: 'running',
+      canRetry: false,
+      terminal: false
+    });
+  });
+
+  it('maps recovery-needed Venice failures to retryable states', () => {
+    expect(normalizeBridgeStatus({ status: 'selector check failed', detail: 'textarea', nonce: 'nonce-3' })).toMatchObject({
+      nonce: 'nonce-3',
+      status: 'retryable',
+      canRetry: true,
+      terminal: true,
+      detail: 'textarea'
+    });
+
+    expect(normalizeBridgeStatus({ status: 'waiting for visible Venice tab', nonce: 'nonce-4' })).toMatchObject({
+      nonce: 'nonce-4',
+      status: 'waiting_visibility',
+      canRetry: true,
+      terminal: false
+    });
+
+    expect(normalizeBridgeStatus({ status: 'timeout: submit not enabled', nonce: 'nonce-5' })).toMatchObject({
+      nonce: 'nonce-5',
+      status: 'retryable',
+      canRetry: true,
+      terminal: true
+    });
+  });
+
+  it('maps image receipt to succeeded and preserves the originating nonce', () => {
+    expect(normalizeBridgeStatus({ status: 'image transferred', nonce: 'nonce-6', detail: 'done' })).toMatchObject({
+      nonce: 'nonce-6',
+      status: 'succeeded',
+      canRetry: false,
+      terminal: true,
+      detail: 'done'
+    });
+
+    expect(normalizeBridgeStatus({ type: 'image', nonce: 'nonce-7', dataUrl: 'data:image/png;base64,abc' })).toMatchObject({
+      nonce: 'nonce-7',
+      status: 'succeeded',
+      canRetry: false,
+      terminal: true,
+      dataUrl: 'data:image/png;base64,abc'
+    });
+
+    expect(normalizeBridgeStatus({ type: 'error', nonce: 'nonce-8', message: 'handler exploded' })).toMatchObject({
+      nonce: 'nonce-8',
+      status: 'failed',
+      canRetry: false,
+      terminal: true,
+      message: 'handler exploded'
+    });
   });
 });
