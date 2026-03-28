@@ -28,7 +28,7 @@ import {
 import { downloadBridgeUserscript } from '../lib/bridgeUserscript';
 
 const galleryDb = new Dexie('vixenlabs-gallery');
-galleryDb.version(1).stores({ images: '++id, createdAt' });
+galleryDb.version(1).stores({ images: 'id, createdAt' });
 
 export const useAppStore = create((set, get) => ({
   schemaBundle: null,
@@ -642,6 +642,7 @@ async function handleGenerationImage(set, get, payload) {
 
   const persistedEntry = {
     ...matchingJob,
+    id: matchingJob.nonce,
     status: 'succeeded',
     detail: payload.detail || 'Image received',
     completedAt: new Date().toISOString(),
@@ -653,7 +654,16 @@ async function handleGenerationImage(set, get, payload) {
   };
 
   await galleryDb.images.put(persistedEntry);
-  const gallery = await galleryDb.images.orderBy('createdAt').reverse().toArray();
+  const galleryEntries = await galleryDb.images.orderBy('createdAt').reverse().toArray();
+  const seenGalleryIds = new Set();
+  const gallery = galleryEntries.filter((entry) => {
+    const stableId = entry.nonce || entry.id;
+    if (!stableId || seenGalleryIds.has(stableId)) {
+      return false;
+    }
+    seenGalleryIds.add(stableId);
+    return true;
+  });
 
   set((state) => ({
     generationJobs: updateGenerationJobs(state.generationJobs, nonce, (job) => ({

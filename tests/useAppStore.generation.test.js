@@ -6,21 +6,30 @@ import { fileURLToPath } from 'node:url';
 const dispatchGenerationRequest = vi.fn();
 const unsubscribeBridge = vi.fn();
 let bridgeHandlers = null;
+let resetDexieRows = null;
 
 vi.mock('dexie', () => {
   const rows = [];
+  resetDexieRows = () => {
+    rows.length = 0;
+  };
 
   class DexieMock {
     constructor() {
       this.images = {
         put: vi.fn(async (entry) => {
-          const existingIndex = rows.findIndex((row) => row.id === entry.id || row.nonce === entry.nonce);
+          const stableId = entry.id || entry.nonce;
+          const normalizedEntry = {
+            ...entry,
+            id: stableId
+          };
+          const existingIndex = rows.findIndex((row) => row.id === stableId);
           if (existingIndex >= 0) {
-            rows.splice(existingIndex, 1, entry);
+            rows.splice(existingIndex, 1, normalizedEntry);
           } else {
-            rows.push(entry);
+            rows.push(normalizedEntry);
           }
-          return entry.id || entry.nonce;
+          return stableId;
         }),
         orderBy: vi.fn(() => ({
           reverse: () => ({
@@ -115,6 +124,7 @@ describe('useAppStore generation flow', async () => {
     bridgeHandlers = null;
     dispatchGenerationRequest.mockReset();
     unsubscribeBridge.mockReset();
+    resetDexieRows?.();
     vi.stubGlobal('window', createWindowMock());
     seedLoadedStore();
   });
@@ -251,6 +261,33 @@ describe('useAppStore generation flow', async () => {
       nonce: job.nonce,
       status: 'succeeded',
       resultDataUrl: 'data:image/png;base64,abc123'
+    });
+  });
+
+  it('upserts repeated image receipts for the same nonce without duplicating gallery entries', async () => {
+    const state = useAppStore.getState();
+    state.setupGenerationBridge();
+    bridgeHandlers.onReady({ source: 'userscript' });
+
+    await state.submitGeneration();
+    const job = useAppStore.getState().generationJobs[0];
+
+    await bridgeHandlers.onImage({
+      nonce: job.nonce,
+      detail: 'Image received',
+      dataUrl: 'data:image/png;base64,first'
+    });
+    await bridgeHandlers.onImage({
+      nonce: job.nonce,
+      detail: 'Image received',
+      dataUrl: 'data:image/png;base64,second'
+    });
+
+    expect(useAppStore.getState().gallery).toHaveLength(1);
+    expect(useAppStore.getState().gallery[0]).toMatchObject({
+      id: job.nonce,
+      nonce: job.nonce,
+      resultDataUrl: 'data:image/png;base64,second'
     });
   });
 
