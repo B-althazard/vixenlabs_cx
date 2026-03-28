@@ -162,15 +162,17 @@ describe('useAppStore generation flow', async () => {
     await state.submitGeneration();
     const firstJob = useAppStore.getState().generationJobs[0];
 
-    bridgeHandlers.onImage({
+    bridgeHandlers.onStatus({
       nonce: firstJob.nonce,
-      dataUrl: 'data:image/png;base64,first'
+      status: 'retryable',
+      detail: 'Selector drift',
+      canRetry: true
     });
 
     expect(useAppStore.getState().generationJobs[0]).toMatchObject({
       nonce: firstJob.nonce,
-      status: 'succeeded',
-      resultDataUrl: 'data:image/png;base64,first'
+      status: 'retryable',
+      resultDataUrl: null
     });
 
     await useAppStore.getState().retryGeneration(firstJob.nonce);
@@ -182,13 +184,20 @@ describe('useAppStore generation flow', async () => {
 
     bridgeHandlers.onImage({
       nonce: firstJob.nonce,
-      dataUrl: 'data:image/png;base64,stale'
+      dataUrl: 'data:image/png;base64,first'
+    });
+
+    expect(useAppStore.getState().generationJobs[1]).toMatchObject({
+      nonce: firstJob.nonce,
+      status: 'retryable',
+      resultDataUrl: null
     });
 
     expect(useAppStore.getState().generationJobs[0]).toMatchObject({
       nonce: retryJob.nonce,
       resultDataUrl: null
     });
+    expect(useAppStore.getState().actionStatus).toMatch(/stale|ignored/i);
 
     bridgeHandlers.onError({ nonce: retryJob.nonce, message: 'Bridge hidden tab recovery required' });
     expect(useAppStore.getState().generationJobs[0]).toMatchObject({

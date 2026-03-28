@@ -249,7 +249,19 @@ export const useAppStore = create((set, get) => ({
     }
 
     set((currentState) => ({
-      generationJobs: [job, ...currentState.generationJobs],
+      generationJobs: [
+        job,
+        ...currentState.generationJobs.map((existingJob) => {
+          if (!sourceJob || existingJob.nonce !== sourceJob.nonce) {
+            return existingJob;
+          }
+
+          return {
+            ...existingJob,
+            supersededByNonce: job.nonce
+          };
+        })
+      ],
       actionStatus: `Queued Venice job ${job.attempt}`
     }));
 
@@ -530,6 +542,7 @@ function createGenerationJobSnapshot(state, sourceJob = null) {
     bridgeState: state.bridgeState,
     canRetry: false,
     attempt: (sourceJob?.attempt || 0) + 1,
+    supersededByNonce: null,
     selectedModelId: sourceJob?.selectedModelId || state.selectedModelId,
     generationPayload: payload,
     promptPackageSnapshot,
@@ -560,6 +573,12 @@ function applyBridgeConnection(set, get, normalized) {
 function applyNormalizedJobUpdate(set, get, normalized) {
   if (!normalized?.nonce) {
     applyBridgeConnection(set, get, normalized);
+    return;
+  }
+
+  const targetJob = get().generationJobs.find((job) => job.nonce === normalized.nonce);
+  if (targetJob?.supersededByNonce) {
+    set({ actionStatus: buildStaleResultMessage() });
     return;
   }
 
@@ -600,7 +619,12 @@ function handleGenerationImage(set, get, payload) {
 
   const matchingJob = get().generationJobs.find((job) => job.nonce === nonce);
   if (!matchingJob) {
-    set({ actionStatus: buildGenerationFailureMessage('Ignored a stale Venice result that no longer matches an active snapshot.') });
+    set({ actionStatus: buildStaleResultMessage() });
+    return;
+  }
+
+  if (matchingJob.supersededByNonce) {
+    set({ actionStatus: buildStaleResultMessage() });
     return;
   }
 
@@ -668,6 +692,10 @@ function buildGenerationStatusMessage(normalized) {
 
 function buildGenerationFailureMessage(detail = '') {
   return `Venice recovery failed. ${detail}`.trim();
+}
+
+function buildStaleResultMessage() {
+  return 'Ignored a stale Venice result because that nonce was already superseded by a newer retry.';
 }
 
 function createGenerationNonce() {
