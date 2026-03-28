@@ -7,5 +7,23 @@
   "qualityPrefix": ["masterpiece", "best quality", "photorealistic", "cinematic detail"],
   "negativeBase": ["low quality", "blurry", "deformed hands", "bad anatomy"],
   "recommendedSettings": { "steps": 36, "cfg_scale": 7, "sampler": "euler" },
+  "generation": {
+    "provider": "venice-bridge",
+    "supports": {
+      "negativePrompt": true,
+      "steps": true,
+      "cfg_scale": true,
+      "sampler": true,
+      "seed": false,
+      "size": false,
+      "style": "advisory",
+      "variants": false
+    },
+    "defaults": {
+      "steps": 36,
+      "cfg_scale": 7,
+      "sampler": "euler"
+    }
+  },
   "ordering": ["identity", "face", "eyes", "hair", "body", "makeup", "lingerie", "posing", "location", "lighting", "camera"]
 }

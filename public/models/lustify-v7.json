@@ -7,5 +7,23 @@
   "qualityPrefix": ["masterpiece", "best quality", "nsfw", "detailed skin"],
   "negativeBase": ["mutated hands", "extra fingers", "cropped head", "blurry"],
   "recommendedSettings": { "steps": 30, "cfg_scale": 7, "sampler": "dpm++ 2m" },
+  "generation": {
+    "provider": "venice-bridge",
+    "supports": {
+      "negativePrompt": true,
+      "steps": true,
+      "cfg_scale": true,
+      "sampler": true,
+      "seed": false,
+      "size": false,
+      "style": "advisory",
+      "variants": false
+    },
+    "defaults": {
+      "steps": 30,
+      "cfg_scale": 7,
+      "sampler": "dpm++ 2m"
+    }
+  },
   "ordering": ["identity", "body", "face", "eyes", "hair", "makeup", "lingerie", "posing", "location", "lighting", "camera"]
 }

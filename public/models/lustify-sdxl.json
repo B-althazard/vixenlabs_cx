@@ -7,5 +7,23 @@
   "qualityPrefix": ["masterpiece", "best quality", "sdxl", "detailed texture"],
   "negativeBase": ["low quality", "bad anatomy", "duplicate limbs", "bad hands"],
   "recommendedSettings": { "steps": 34, "cfg_scale": 7, "sampler": "dpm++ sde" },
+  "generation": {
+    "provider": "venice-bridge",
+    "supports": {
+      "negativePrompt": true,
+      "steps": true,
+      "cfg_scale": true,
+      "sampler": true,
+      "seed": false,
+      "size": false,
+      "style": "advisory",
+      "variants": false
+    },
+    "defaults": {
+      "steps": 34,
+      "cfg_scale": 7,
+      "sampler": "dpm++ sde"
+    }
+  },
   "ordering": ["identity", "face", "eyes", "hair", "body", "makeup", "lingerie", "posing", "location", "lighting", "camera"]
 }

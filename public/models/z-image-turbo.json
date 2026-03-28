@@ -7,5 +7,23 @@
   "qualityPrefix": ["photoreal", "clean render", "high detail"],
   "negativeBase": [],
   "recommendedSettings": { "steps": 8, "cfg_scale": 2, "sampler": "turbo" },
+  "generation": {
+    "provider": "venice-bridge",
+    "supports": {
+      "negativePrompt": false,
+      "steps": true,
+      "cfg_scale": true,
+      "sampler": true,
+      "seed": false,
+      "size": false,
+      "style": "none",
+      "variants": false
+    },
+    "defaults": {
+      "steps": 8,
+      "cfg_scale": 2,
+      "sampler": "turbo"
+    }
+  },
   "ordering": ["identity", "body", "face", "eyes", "hair", "makeup", "lingerie", "posing", "location", "lighting", "camera"]
 }

@@ -222,6 +222,56 @@ export function getPromptFragments(schemaBundle, model, formValues, visibleCateg
   return fragments;
 }
 
+function getModelGenerationConfig(model) {
+  return model.generation || {
+    provider: 'venice-bridge',
+    supports: {
+      negativePrompt: !!model.supportsNegativePrompt,
+      steps: true,
+      cfg_scale: true,
+      sampler: true,
+      seed: false,
+      size: false,
+      style: model.styleSupport || 'none',
+      variants: false
+    },
+    defaults: {
+      ...model.recommendedSettings
+    }
+  };
+}
+
+export function buildGenerationPayload(schemaBundle, models, selectedModelId, formValues, visibleCategories) {
+  const model = models[selectedModelId];
+  const generation = getModelGenerationConfig(model);
+  const fragments = getPromptFragments(schemaBundle, model, formValues, visibleCategories);
+  const promptParts = [...model.qualityPrefix, ...fragments.map((fragment) => fragment.text)];
+  const settings = {
+    model: model.id
+  };
+
+  for (const [key, value] of Object.entries(generation.defaults || {})) {
+    if (generation.supports[key]) {
+      settings[key] = value;
+    }
+  }
+
+  const payload = {
+    prompt: promptParts.join(', '),
+    provider: generation.provider,
+    supports: {
+      ...generation.supports
+    },
+    settings
+  };
+
+  if (generation.supports.negativePrompt) {
+    payload.negativePrompt = model.negativeBase.join(', ');
+  }
+
+  return payload;
+}
+
 export function buildPromptPackage(schemaBundle, models, selectedModelId, formValues, visibleCategories) {
   const model = models[selectedModelId];
   const fragments = getPromptFragments(schemaBundle, model, formValues, visibleCategories);
