@@ -21,6 +21,7 @@ export default function PromptPanel({
   onSavePreset,
   onRefreshRuntime,
   onCopyPrompt,
+  onInstallBridgeUserscript,
   onResetLook,
   onExportLook,
   onExportPresets,
@@ -169,6 +170,9 @@ export default function PromptPanel({
       <div className="mt-5 flex flex-wrap gap-3">
         <button type="button" onClick={onGenerate} disabled={!isValid} className="rounded-full bg-ember px-5 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">
           Generate with Venice
+        </button>
+        <button type="button" onClick={onInstallBridgeUserscript} className="rounded-full border border-stone-300 px-5 py-3 font-medium text-ink">
+          Install Bridge Script
         </button>
         <button type="button" onClick={onSavePreset} disabled={!isValid} className="rounded-full border border-stone-300 px-5 py-3 font-medium text-ink disabled:cursor-not-allowed disabled:opacity-50">
           Save As New Preset

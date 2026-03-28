@@ -25,6 +25,7 @@ import {
   normalizeBridgeStatus,
   subscribeToVeniceBridge
 } from '../lib/veniceBridge';
+import { downloadBridgeUserscript } from '../lib/bridgeUserscript';
 
 const galleryDb = new Dexie('vixenlabs-gallery');
 galleryDb.version(1).stores({ images: '++id, createdAt' });
@@ -436,6 +437,17 @@ export const useAppStore = create((set, get) => ({
 
     saveUserPresetsRecord(merged.userPresets, state.schemaBundle?.version);
     set(merged);
+    clearActionStatus(get, set);
+  },
+  installBridgeUserscript() {
+    const opened = downloadBridgeUserscript();
+
+    set({
+      actionStatus: opened
+        ? 'Opened the Venice bridge userscript for install/update.'
+        : 'Bridge userscript install is only available in the browser.'
+    });
+
     clearActionStatus(get, set);
   }
 }));

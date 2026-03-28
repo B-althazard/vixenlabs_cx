@@ -48,6 +48,7 @@ export default function App() {
     resetCurrentLook,
     refreshRuntime,
     copyPrompt,
+    installBridgeUserscript,
     exportCurrentLook,
     exportUserPresets,
     importUserPresets
@@ -165,6 +166,7 @@ export default function App() {
           onSavePreset={savePreset}
           onRefreshRuntime={refreshRuntime}
           onCopyPrompt={copyPrompt}
+          onInstallBridgeUserscript={installBridgeUserscript}
           onResetLook={resetCurrentLook}
           onExportLook={exportCurrentLook}
           onExportPresets={exportUserPresets}
