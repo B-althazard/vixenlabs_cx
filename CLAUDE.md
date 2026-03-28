@@ -1,0 +1,222 @@
+<!-- GSD:project-start source:PROJECT.md -->
+## Project
+
+**Vixen Labs CX**
+
+Vixen Labs CX is a mobile-first AI character creation app for content creators who want to build female and futanari characters through a structured, schema-driven interface instead of free-text prompting. The current brownfield codebase already delivers the core character builder, prompt assembly flow, presets, and browser-local gallery scaffolding, and the next project scope extends that foundation toward a production-ready Venice.ai-backed creation workflow.
+
+**Core Value:** Users can rapidly create high-quality, conflict-safe character prompts and generation flows without writing prompts manually.
+
+### Constraints
+
+- **Product scope**: Female and futanari characters only - this is the core audience and content boundary from the product spec.
+- **Input model**: No free-text fields in the application - every selection must map to curated prompt-ready values.
+- **Hosting**: Static deployment on GitHub Pages - the app must work without a backend in the current phase.
+- **UX**: Mobile-first with mandatory swipe gestures - desktop support matters, but mobile interaction quality comes first.
+- **Storage**: Browser-local persistence for current scope - presets and gallery data stay local until a later production architecture changes that.
+- **Integration**: Venice.ai is the intended image provider - near-term automation should align with the provided bridge script and avoid committing secrets.
+<!-- GSD:project-end -->
+
+<!-- GSD:stack-start source:codebase/STACK.md -->
+## Technology Stack
+
+## Languages
+- JavaScript (ES modules) - application and build code in `src/**/*.jsx`, `src/**/*.js`, `vite.config.js`, `tailwind.config.js`, and `postcss.config.js`
+- JSON - app data/config payloads in `public/schema/index.json`, `public/schema/categories/*.json`, `public/models/*.json`, and `public/presets/system-presets.json`
+- YAML - deployment workflow in `.github/workflows/deploy.yml`
+- CSS - Tailwind-driven app styles in `src/index.css`
+## Runtime
+- Node.js 20 in CI via `.github/workflows/deploy.yml`
+- Browser runtime for the shipped app, including `fetch`, `localStorage`, `navigator.clipboard`, Blob download APIs, and IndexedDB via Dexie in `src/lib/schema.js` and `src/store/useAppStore.js`
+- npm - scripts and install flow defined in `package.json`
+- Lockfile: present in `package-lock.json`
+## Frameworks
+- React 18.3.1 - UI rendering from `src/main.jsx` and `src/App.jsx`
+- Zustand 4.5.5 - client state container in `src/store/useAppStore.js`
+- Vitest 2.1.8 - unit/data tests in `tests/engine.test.js`
+- Vite 6.0.5 - dev server and production build in `package.json` and `vite.config.js`
+- `@vitejs/plugin-react` 4.3.4 - React transform support in `vite.config.js`
+- `vite-plugin-pwa` 0.21.1 - PWA manifest/service worker generation in `vite.config.js` and `src/main.jsx`
+- Tailwind CSS 3.4.17 - utility styling configured in `tailwind.config.js`
+- PostCSS 8.4.49 + Autoprefixer 10.4.20 - CSS processing in `postcss.config.js`
+## Key Dependencies
+- `react` 18.3.1 - base component model for the single-page app in `src/App.jsx`
+- `react-dom` 18.3.1 - DOM mounting in `src/main.jsx`
+- `zustand` 4.5.5 - central app state, actions, and derived prompt data in `src/store/useAppStore.js`
+- `dexie` 4.0.11 - IndexedDB wrapper for gallery persistence in `src/store/useAppStore.js`
+- `vite` 6.0.5 - build tool and preview server used by `npm run dev`, `npm run build`, and `npm run preview` in `package.json`
+- `vite-plugin-pwa` 0.21.1 - offline/app-shell packaging for GitHub Pages deployment in `vite.config.js`
+- `tailwindcss` 3.4.17 - design token and utility system used by `src/index.css` and JSX class names
+- `vitest` 2.1.8 - executable test runner for schema/engine validation in `tests/engine.test.js`
+## Configuration
+- No `.env` files detected at repository root during analysis
+- No repository evidence of required runtime environment variables; app configuration is file-based via `public/schema/index.json`, `public/models/*.json`, and `public/presets/system-presets.json`
+- Vite base-path configuration is required for hosting under `/vixenlabs_cx/` in `vite.config.js`
+- `package.json` - npm scripts and dependency manifest
+- `vite.config.js` - Vite base path, React plugin, and PWA settings
+- `tailwind.config.js` - content scan paths, colors, fonts, and shadows
+- `postcss.config.js` - Tailwind + Autoprefixer pipeline
+- `.github/workflows/deploy.yml` - CI build and GitHub Pages deployment
+## Platform Requirements
+- Install dependencies with `npm install` per `README.md`
+- Start local dev server with `npm run dev` from `package.json`
+- Run tests with `npm run test` from `package.json`
+- Build production assets with `npm run build` and inspect with `npm run preview` from `package.json`
+- Static frontend deployment target: GitHub Pages via `.github/workflows/deploy.yml`
+- Output artifact: `dist/` generated by Vite and uploaded by GitHub Actions in `.github/workflows/deploy.yml`
+- Hosting path assumes repository subpath `/vixenlabs_cx/` in `vite.config.js`
+<!-- GSD:stack-end -->
+
+<!-- GSD:conventions-start source:CONVENTIONS.md -->
+## Conventions
+
+## Naming Patterns
+- Use `PascalCase.jsx` for React components in `src/components/` and `src/App.jsx`; examples: `src/components/FieldRenderer.jsx`, `src/components/PromptPanel.jsx`, `src/App.jsx`.
+- Use `camelCase.js` for store and utility modules; examples: `src/store/useAppStore.js`, `src/lib/schema.js`, `src/lib/storage.js`.
+- Use `.test.js` for test files in `tests/`; example: `tests/engine.test.js`.
+- Use `camelCase` for functions and store actions; examples: `resolveState()` in `src/lib/engines.js`, `loadSchemaBundle()` in `src/lib/schema.js`, `copyPrompt()` in `src/store/useAppStore.js`.
+- Use `use*` naming for Zustand hooks; example: `useAppStore` in `src/store/useAppStore.js`.
+- Use `handle*` for component event handlers; examples: `handleTouchStart()` in `src/App.jsx`, `handleImport()` in `src/components/PromptPanel.jsx`, `handleSelect()` in `src/components/FieldRenderer.jsx`.
+- Use descriptive `camelCase` names, including booleans like `isValid`, `loading`, and `disabled` in `src/store/useAppStore.js` and `src/lib/engines.js`.
+- Use `UPPER_SNAKE_CASE` for module-level constants; examples: `PROMPT_BLOCK_LABELS` in `src/lib/engines.js`, `USER_PRESETS_KEY` and `SETTINGS_KEY` in `src/lib/storage.js`.
+- Not applicable. No TypeScript or runtime schema typing layer is present in `src/`.
+## Code Style
+- No Prettier, Biome, or dedicated formatter config is detected at repo root.
+- Follow the repository's existing style from `src/**/*.js` and `src/**/*.jsx`:
+- Keep long expressions wrapped across lines instead of compressing them; see `buildPromptPackage()` in `src/lib/engines.js` and `initialize()` in `src/store/useAppStore.js`.
+- No ESLint or Biome config is detected, and `package.json` contains no lint script.
+- Use code review and test pass status as the current quality gate.
+## Import Organization
+- Not detected. Use relative imports such as `./components/CategoryRail` in `src/App.jsx` and `../lib/schema` in `src/store/useAppStore.js`.
+- In app source, local imports usually omit file extensions; examples: `src/App.jsx`, `src/store/useAppStore.js`.
+- In Node-based tests, local imports include `.js` extensions for ESM compatibility; examples: `../src/lib/schema.js`, `../src/lib/engines.js` in `tests/engine.test.js`.
+## Error Handling
+- Prefer `try`/`catch` around browser APIs and storage access, then fall back to safe defaults; see `loadUserPresets()` and `loadSettings()` in `src/lib/storage.js`, `handleImport()` in `src/components/PromptPanel.jsx`, and `copyPrompt()` in `src/store/useAppStore.js`.
+- Throw explicit `Error` objects for failed fetches; see `loadJson()` in `src/lib/schema.js`.
+- Use early returns to avoid nested conditionals; examples in `src/App.jsx`, `src/components/FieldRenderer.jsx`, and `src/store/useAppStore.js`.
+- Surface async initialization failures into store state instead of logging; see `initialize()` in `src/store/useAppStore.js`.
+## Logging
+- Do not introduce `console.*` logging as a default pattern. No application logging calls are present in `src/`.
+- Report user-visible status through state fields such as `copyStatus`, `actionStatus`, and `error` in `src/store/useAppStore.js`.
+## Comments
+- Keep comments minimal. Source files in `src/` contain almost no inline comments.
+- Prefer self-describing function and variable names over explanatory comments.
+- Not used in `src/` or `tests/`. Match the current style unless a new public API genuinely needs contract documentation.
+## Function Design
+- Utilities in `src/lib/schema.js` and `src/lib/storage.js` stay small and single-purpose.
+- Complex orchestration currently lives in larger functions and store actions, especially `initialize()` and other actions in `src/store/useAppStore.js`. Keep new helpers extracted into `src/lib/` when logic becomes reusable.
+- Pass explicit primitives and plain objects rather than option bags when the call site is short; examples: `resolveState(schemaBundle, formValues)` in `src/lib/engines.js` and `updateField(fieldId, value)` in `src/store/useAppStore.js`.
+- For components, destructure props in the function signature; examples in `src/components/PromptPanel.jsx`, `src/components/GalleryPanel.jsx`, and `src/components/CategoryRail.jsx`.
+- Utility functions return plain objects with named fields; examples: `evaluateState()` and `buildPromptPackage()` in `src/lib/engines.js`.
+- Store actions mutate state through `set()` and persist side effects separately; see `persistWorkingState()` in `src/store/useAppStore.js`.
+## Module Design
+- Use default exports for React components; examples: `src/App.jsx`, `src/components/FieldRenderer.jsx`, `src/components/GalleryPanel.jsx`.
+- Use named exports for utility modules; examples: `src/lib/schema.js`, `src/lib/engines.js`, `src/lib/storage.js`.
+- Export the Zustand hook as a named constant; example: `export const useAppStore` in `src/store/useAppStore.js`.
+- Not used. Import directly from concrete files such as `./components/PromptPanel` and `../lib/storage`.
+## Quality Signals and Gaps
+- `package.json` defines `npm test` only; no lint, format, typecheck, coverage, or watch scripts are present.
+- `.github/workflows/deploy.yml` builds and deploys on push to `main` but does not run `npm test`, so tests are not a deployment gate.
+- Conventions are consistent across `src/`, but they are enforced socially rather than by tooling.
+- The codebase relies on plain JavaScript, so preserve naming clarity and small helpers to compensate for the lack of static typing.
+<!-- GSD:conventions-end -->
+
+<!-- GSD:architecture-start source:ARCHITECTURE.md -->
+## Architecture
+
+## Pattern Overview
+- `src/main.jsx` mounts a single React root and registers the PWA service worker.
+- `src/App.jsx` composes the full UI from store-backed presentational panels instead of route-based pages.
+- `src/store/useAppStore.js` acts as the orchestration layer for loading assets, resolving state rules, building prompts, and persisting user data.
+## Layers
+- Purpose: Start the application shell and global styling.
+- Location: `src/main.jsx`, `index.html`, `src/index.css`
+- Contains: React root creation, service worker registration, Tailwind entry CSS, and the root DOM node.
+- Depends on: React, `virtual:pwa-register`, Vite asset handling.
+- Used by: Browser entry at `index.html`.
+- Purpose: Assemble the visible app layout and bind UI controls to store state/actions.
+- Location: `src/App.jsx`
+- Contains: Header, category rail, active category form area, prompt panel, gallery panel, and swipe navigation logic.
+- Depends on: `src/store/useAppStore.js`, `src/components/CategoryRail.jsx`, `src/components/FieldRenderer.jsx`, `src/components/PromptPanel.jsx`, `src/components/GalleryPanel.jsx`.
+- Used by: `src/main.jsx`.
+- Purpose: Render reusable UI sections without owning application state.
+- Location: `src/components/CategoryRail.jsx`, `src/components/FieldRenderer.jsx`, `src/components/PromptPanel.jsx`, `src/components/GalleryPanel.jsx`
+- Contains: Category navigation, schema field controls, prompt/export actions, preset cards, and gallery cards.
+- Depends on: Props passed from `src/App.jsx`.
+- Used by: `src/App.jsx`.
+- Purpose: Hold canonical client state and expose all user actions.
+- Location: `src/store/useAppStore.js`
+- Contains: Initialization, field updates, model selection, randomization, preset CRUD, gallery CRUD, clipboard/export/import actions, and persistence helpers.
+- Depends on: `src/lib/schema.js`, `src/lib/engines.js`, `src/lib/storage.js`, Dexie, Zustand.
+- Used by: `src/App.jsx`.
+- Purpose: Interpret schema definitions and derive resolved prompt-building state.
+- Location: `src/lib/engines.js`, `src/lib/schema.js`
+- Contains: Schema loading, field flattening, default state creation, rule evaluation, sanitization, prompt fragment generation, and randomization.
+- Depends on: JSON assets under `public/schema/`, `public/models/`, and `public/presets/`.
+- Used by: `src/store/useAppStore.js`, `tests/engine.test.js`.
+- Purpose: Persist browser-local user state and generated gallery items.
+- Location: `src/lib/storage.js`, Dexie setup inside `src/store/useAppStore.js`
+- Contains: `localStorage` access for settings and user presets plus IndexedDB-backed gallery storage.
+- Depends on: Browser storage APIs and Dexie.
+- Used by: `src/store/useAppStore.js`.
+- Purpose: Define schema categories, model configs, and system presets as versioned JSON assets.
+- Location: `public/schema/index.json`, `public/schema/categories/*.json`, `public/models/*.json`, `public/presets/system-presets.json`
+- Contains: Category manifests, field definitions, option rules, model ordering/settings, and curated presets.
+- Depends on: Vite static file serving.
+- Used by: `src/lib/schema.js` at runtime and `tests/engine.test.js` in tests.
+## Data Flow
+- Use a single Zustand store in `src/store/useAppStore.js` as the source of truth.
+- Keep derived state (`disabled`, `visibleCategories`, `promptPackage`, `missingRequired`) in the store so components stay stateless.
+- Persist long-lived user state in `localStorage` and gallery history in IndexedDB.
+## Key Abstractions
+- Purpose: Represent the full category/field graph loaded from split JSON files.
+- Examples: `public/schema/index.json`, `public/schema/categories/identity.json`, `public/schema/categories/camera.json`
+- Pattern: Manifest-plus-definition loading in `loadSchemaBundle()` inside `src/lib/schema.js`.
+- Purpose: Normalize raw selections into a valid UI state with disabled fields, visible categories, notices, and required-field tracking.
+- Examples: `evaluateState()`, `sanitizeFormValues()`, `resolveState()` in `src/lib/engines.js`
+- Pattern: Multi-pass rule evaluation and sanitization loop.
+- Purpose: Convert the resolved schema state into model-specific generation output.
+- Examples: `buildPromptPackage()` and `getPromptFragments()` in `src/lib/engines.js`; rendering in `src/components/PromptPanel.jsx`
+- Pattern: Ordered fragment assembly driven by `public/models/*.json` ordering and capability flags.
+- Purpose: Capture reusable looks and placeholder generation history.
+- Examples: `savePreset()`, `loadPreset()`, `captureGeneration()`, `loadGalleryEntry()` in `src/store/useAppStore.js`
+- Pattern: Browser-local record snapshots with separate storage backends for presets and gallery entries.
+## Entry Points
+- Location: `src/main.jsx`
+- Triggers: Browser loading `index.html`.
+- Responsibilities: Register the PWA worker, import global CSS, and render the app root.
+- Location: `src/App.jsx`
+- Triggers: React render lifecycle.
+- Responsibilities: Initialize the store, choose the active category, and coordinate the three main UI regions.
+- Location: `.github/workflows/deploy.yml`
+- Triggers: Push to `main` or manual workflow dispatch.
+- Responsibilities: Run `npm ci`, `npm run build`, upload `dist/`, and deploy to GitHub Pages.
+## Error Handling
+- `src/lib/schema.js` throws when a fetch for schema/model/preset JSON fails.
+- `initialize()` in `src/store/useAppStore.js` catches startup failures and stores `error` for `src/App.jsx` to render.
+- `src/lib/storage.js` wraps `localStorage` parsing in `try/catch` and falls back to empty objects or arrays.
+- `copyPrompt()` and preset import handling in `src/store/useAppStore.js` and `src/components/PromptPanel.jsx` degrade to status messages instead of throwing.
+## Cross-Cutting Concerns
+<!-- GSD:architecture-end -->
+
+<!-- GSD:workflow-start source:GSD defaults -->
+## GSD Workflow Enforcement
+
+Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
+
+Use these entry points:
+- `/gsd:quick` for small fixes, doc updates, and ad-hoc tasks
+- `/gsd:debug` for investigation and bug fixing
+- `/gsd:execute-phase` for planned phase work
+
+Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
+<!-- GSD:workflow-end -->
+
+
+
+<!-- GSD:profile-start -->
+## Developer Profile
+
+> Profile not yet configured. Run `/gsd:profile-user` to generate your developer profile.
+> This section is managed by `generate-claude-profile` -- do not edit manually.
+<!-- GSD:profile-end -->
