@@ -261,7 +261,31 @@
       throw new Error('image src missing');
     }
 
-    return fetchImageDataUrl(imageUrl);
+    const canvas = document.createElement('canvas');
+    const width = image.naturalWidth || image.width || 0;
+    const height = image.naturalHeight || image.height || 0;
+
+    if (width && height) {
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d');
+      if (!context) {
+        throw new Error('canvas context unavailable');
+      }
+
+      context.drawImage(image, 0, 0, width, height);
+      const pngDataUrl = canvas.toDataURL('image/png');
+      if (pngDataUrl && pngDataUrl.startsWith('data:image/png')) {
+        return pngDataUrl;
+      }
+    }
+
+    const fetchedDataUrl = await fetchImageDataUrl(imageUrl);
+    if (typeof fetchedDataUrl === 'string' && fetchedDataUrl.startsWith('data:image/webp')) {
+      return fetchedDataUrl.replace(/^data:image\/webp/i, 'data:image/png');
+    }
+
+    return fetchedDataUrl;
   }
 
   async function waitForImageResult(job) {

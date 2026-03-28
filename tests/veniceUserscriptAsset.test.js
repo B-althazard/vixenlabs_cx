@@ -34,6 +34,13 @@ describe('Venice userscript asset', () => {
     expect(userscript).toContain('image transfer failed');
   });
 
+  it('normalizes returned image payloads to png data urls', () => {
+    expect(userscript).toContain("canvas.toDataURL('image/png')");
+    expect(userscript).toContain("fetchedDataUrl.startsWith('data:image/webp')");
+    expect(userscript).toContain("replace(/^data:image\\/webp/i, 'data:image/png')");
+    expect(userscript).toContain("mime: 'image/png'");
+  });
+
   it('marks processed nonces only after image publish succeeds', () => {
     const publishIndex = userscript.indexOf('publishImage({');
     const processedIndex = userscript.indexOf('GM_setValue(KEYS.LAST_PROCESSED_NONCE, job.nonce);');
