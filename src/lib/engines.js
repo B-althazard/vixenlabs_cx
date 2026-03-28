@@ -241,11 +241,11 @@ function getModelGenerationConfig(model) {
   };
 }
 
-export function buildGenerationPayload(schemaBundle, models, selectedModelId, formValues, visibleCategories) {
-  const model = models[selectedModelId];
-  const generation = getModelGenerationConfig(model);
-  const fragments = getPromptFragments(schemaBundle, model, formValues, visibleCategories);
-  const promptParts = [...model.qualityPrefix, ...fragments.map((fragment) => fragment.text)];
+function buildPromptParts(model, fragments) {
+  return [...model.qualityPrefix, ...fragments.map((fragment) => fragment.text)];
+}
+
+function buildGenerationPayloadFromModel(model, generation, promptParts) {
   const settings = {
     model: model.id
   };
@@ -272,23 +272,39 @@ export function buildGenerationPayload(schemaBundle, models, selectedModelId, fo
   return payload;
 }
 
+export function buildGenerationPayload(schemaBundle, models, selectedModelId, formValues, visibleCategories) {
+  const model = models[selectedModelId];
+  const generation = getModelGenerationConfig(model);
+  const fragments = getPromptFragments(schemaBundle, model, formValues, visibleCategories);
+  const promptParts = buildPromptParts(model, fragments);
+
+  return buildGenerationPayloadFromModel(model, generation, promptParts);
+}
+
 export function buildPromptPackage(schemaBundle, models, selectedModelId, formValues, visibleCategories) {
   const model = models[selectedModelId];
   const fragments = getPromptFragments(schemaBundle, model, formValues, visibleCategories);
-  const promptParts = [...model.qualityPrefix, ...fragments.map((fragment) => fragment.text)];
-  const negativePrompt = model.supportsNegativePrompt
-    ? model.negativeBase.join(', ')
+  const generation = getModelGenerationConfig(model);
+  const promptParts = buildPromptParts(model, fragments);
+  const generationPayload = buildGenerationPayloadFromModel(model, generation, promptParts);
+  const negativePrompt = generation.supports.negativePrompt
+    ? generationPayload.negativePrompt
     : 'Use in-prompt exclusions only for this model.';
 
   const placeholders = fragments.filter((fragment) => fragment.placeholder).map((fragment) => fragment.text);
 
   return {
-    prompt: promptParts.join(', '),
+    prompt: generationPayload.prompt,
     negativePrompt,
-    advice: model.supportsNegativePrompt
+    advice: generation.supports.negativePrompt
       ? 'Use the recommended negative prompt and keep location-lighting-camera aligned.'
       : 'This model responds better to compact prompts; avoid adding a separate negative prompt.',
     recommendedSettings: model.recommendedSettings,
+    generationProvider: generation.provider,
+    generationSupport: {
+      ...generation.supports
+    },
+    generationPayload,
     blocks: fragments,
     placeholders,
     blockCount: fragments.length
