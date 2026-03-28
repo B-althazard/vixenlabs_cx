@@ -287,6 +287,7 @@
           height: latestImage.naturalHeight || null,
           mime: 'image/png'
         });
+        GM_setValue(KEYS.LAST_PROCESSED_NONCE, job.nonce);
         clearActiveJob(job.nonce);
         return;
       }
@@ -320,7 +321,6 @@
         status: 'resuming-image-transfer'
       });
       handleVeniceJob(request);
-      GM_setValue(KEYS.LAST_PROCESSED_NONCE, request.nonce);
     }, CONFIG.replayWaitMs);
   }
 
@@ -469,7 +469,6 @@
         return;
       }
 
-      GM_setValue(KEYS.LAST_PROCESSED_NONCE, request.nonce);
       emitBridgeReadyIfFresh();
       await handleVeniceJob(request);
     });

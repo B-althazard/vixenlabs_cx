@@ -33,4 +33,15 @@ describe('Venice userscript asset', () => {
     expect(userscript).toContain('height: latestImage.naturalHeight || null');
     expect(userscript).toContain('image transfer failed');
   });
+
+  it('marks processed nonces only after image publish succeeds', () => {
+    const publishIndex = userscript.indexOf('publishImage({');
+    const processedIndex = userscript.indexOf('GM_setValue(KEYS.LAST_PROCESSED_NONCE, job.nonce);');
+    const listenerIndex = userscript.indexOf('GM_addValueChangeListener(KEYS.REQUEST_NONCE');
+    const eagerProcessedIndex = userscript.indexOf('GM_setValue(KEYS.LAST_PROCESSED_NONCE, request.nonce);', listenerIndex);
+
+    expect(publishIndex).toBeGreaterThan(-1);
+    expect(processedIndex).toBeGreaterThan(publishIndex);
+    expect(eagerProcessedIndex).toBe(-1);
+  });
 });
