@@ -146,7 +146,16 @@ export default function PromptPanel({
         </label>
       </div>
       {copyStatus && <div className="mt-3 text-sm text-moss">{copyStatus}</div>}
-      {actionStatus && <div className="mt-2 text-sm text-ember">{actionStatus}</div>}
+      {actionStatus && (
+        <div
+          className={`mt-2 rounded-2xl px-4 py-3 text-sm ${/recover|quarantin/i.test(actionStatus)
+            ? 'bg-amber-100 text-amber-950'
+            : 'text-ember'
+          }`}
+        >
+          {actionStatus}
+        </div>
+      )}
     </aside>
   );
 }

@@ -3,7 +3,23 @@ import { create } from 'zustand';
 import { buildPromptPackage, randomizeForm, resolveState } from '../lib/engines';
 import { createRuntimeUpdateState, RUNTIME_UPDATE_MESSAGE } from '../lib/runtimeFreshness';
 import { buildFieldIndex, createDefaultFormValues, createDefaultLocks, loadModels, loadSchemaBundle, loadSystemPresets } from '../lib/schema';
-import { createSettingsPatch, loadSettings, loadUserPresets, saveSettings, saveUserPresets } from '../lib/storage';
+import {
+  createSettingsPatch,
+  loadSettings,
+  loadSettingsRecord,
+  loadUserPresets,
+  loadUserPresetsRecord,
+  saveSettings,
+  saveSettingsRecord,
+  saveUserPresets,
+  saveUserPresetsRecord
+} from '../lib/storage';
+import {
+  sanitizeGalleryEntries,
+  sanitizeImportedPresets,
+  sanitizePresetCollection,
+  sanitizeSettings
+} from '../lib/runtimeState';
 
 const galleryDb = new Dexie('vixenlabs-gallery');
 galleryDb.version(1).stores({ images: '++id, createdAt' });
@@ -37,41 +53,25 @@ export const useAppStore = create((set, get) => ({
     try {
       const [schemaBundle, models] = await Promise.all([loadSchemaBundle(), loadModels()]);
       const systemPresets = await loadSystemPresets(schemaBundle, models);
-      const settings = loadSettings();
-      const userPresets = loadUserPresets();
-      const defaultValues = createDefaultFormValues(schemaBundle);
-      const sourceValues = settings.formValues || defaultValues;
-      const resolved = resolveState(schemaBundle, sourceValues);
-      const selectedModelId = settings.selectedModelId || 'chroma1-hd';
-      const promptPackage = buildPromptPackage(schemaBundle, models, selectedModelId, resolved.values, resolved.evaluation.visibleCategories);
       const gallery = await galleryDb.images.orderBy('createdAt').reverse().toArray();
-      const activeCategoryId = selectActiveCategoryId(schemaBundle, resolved.evaluation.visibleCategories, settings.activeCategoryId);
+      const initializedState = createInitializedState({
+        schemaBundle,
+        models,
+        systemPresets,
+        settingsRecord: loadSettingsRecord(),
+        userPresetRecord: loadUserPresetsRecord(),
+        galleryEntries: gallery
+      });
+
+      saveSanitizedSettings(schemaBundle, initializedState.persistedSettings);
+      saveUserPresetsRecord(initializedState.userPresets, schemaBundle.version);
+      await replaceGalleryEntries(initializedState.gallery);
 
       set({
-        schemaBundle,
-        fieldIndex: buildFieldIndex(schemaBundle),
-        models,
-        selectedModelId,
-        formValues: resolved.values,
-        locks: { ...createDefaultLocks(schemaBundle), ...(settings.locks || {}) },
-        disabled: resolved.evaluation.disabled,
-        visibleCategories: resolved.evaluation.visibleCategories,
-        promptPackage,
-        notices: resolved.evaluation.notices,
-        isValid: resolved.evaluation.isValid,
-        missingRequired: resolved.evaluation.missingRequired,
-        systemPresets,
-        userPresets,
-        presets: [...systemPresets, ...userPresets],
-        gallery,
-        activeCategoryId,
+        ...initializedState,
         runtimeUpdateAvailable: false,
         runtimeUpdateMessage: '',
-        applyRuntimeUpdate: null,
-        copyStatus: '',
-        actionStatus: '',
-        loading: false,
-        error: ''
+        applyRuntimeUpdate: null
       });
     } catch (error) {
       set({ error: error.message, loading: false });
@@ -198,34 +198,17 @@ export const useAppStore = create((set, get) => ({
     if (!entry) {
       return;
     }
-    const resolved = resolveState(state.schemaBundle, entry.formValues);
-    const selectedModelId = entry.selectedModelId || state.selectedModelId;
-    const activeCategoryId = selectActiveCategoryId(state.schemaBundle, resolved.evaluation.visibleCategories, state.activeCategoryId);
-    const promptPackage = buildPromptPackage(
-      state.schemaBundle,
-      state.models,
-      selectedModelId,
-      resolved.values,
-      resolved.evaluation.visibleCategories
-    );
-    saveSettings(createSettingsPatch(loadSettings(), {
-      selectedModelId,
+    const restored = restorePersistedSelection({
+      schemaBundle: state.schemaBundle,
+      models: state.models,
+      selectedModelId: state.selectedModelId,
+      activeCategoryId: state.activeCategoryId,
       locks: state.locks,
-      formValues: resolved.values,
-      activeCategoryId
-    }));
-    set({
-      selectedModelId,
-      formValues: resolved.values,
-      disabled: resolved.evaluation.disabled,
-      visibleCategories: resolved.evaluation.visibleCategories,
-      activeCategoryId,
-      promptPackage,
-      notices: resolved.evaluation.notices,
-      isValid: resolved.evaluation.isValid,
-      missingRequired: resolved.evaluation.missingRequired,
-      actionStatus: 'Loaded gallery entry'
+      entryLabel: 'gallery entry',
+      payload: entry
     });
+    saveSanitizedSettings(state.schemaBundle, restored.persistedSettings);
+    set(restored);
     clearActionStatus(get, set);
   },
   async deleteGalleryEntry(entryId) {
@@ -249,7 +232,7 @@ export const useAppStore = create((set, get) => ({
     };
 
     const userPresets = [preset, ...state.userPresets];
-    saveUserPresets(userPresets);
+    saveUserPresetsRecord(userPresets, state.schemaBundle?.version);
     set({
       userPresets,
       presets: [...state.systemPresets, ...userPresets],
@@ -260,7 +243,7 @@ export const useAppStore = create((set, get) => ({
   deleteUserPreset(presetId) {
     const state = get();
     const userPresets = state.userPresets.filter((preset) => preset.id !== presetId);
-    saveUserPresets(userPresets);
+    saveUserPresetsRecord(userPresets, state.schemaBundle?.version);
     set({
       userPresets,
       presets: [...state.systemPresets, ...userPresets],
@@ -274,34 +257,17 @@ export const useAppStore = create((set, get) => ({
     if (!preset) {
       return;
     }
-    const resolved = resolveState(state.schemaBundle, preset.formValues);
-    const activeCategoryId = selectActiveCategoryId(state.schemaBundle, resolved.evaluation.visibleCategories, state.activeCategoryId);
-    const promptPackage = buildPromptPackage(
-      state.schemaBundle,
-      state.models,
-      preset.selectedModelId || state.selectedModelId,
-      resolved.values,
-      resolved.evaluation.visibleCategories
-    );
-    saveSettings(createSettingsPatch(loadSettings(), {
-      selectedModelId: preset.selectedModelId || state.selectedModelId,
+    const restored = restorePersistedSelection({
+      schemaBundle: state.schemaBundle,
+      models: state.models,
+      selectedModelId: state.selectedModelId,
+      activeCategoryId: state.activeCategoryId,
       locks: state.locks,
-      formValues: resolved.values,
-      activeCategoryId
-    }));
-    set({
-      selectedModelId: preset.selectedModelId || state.selectedModelId,
-      formValues: resolved.values,
-      disabled: resolved.evaluation.disabled,
-      visibleCategories: resolved.evaluation.visibleCategories,
-      activeCategoryId,
-      promptPackage,
-      notices: resolved.evaluation.notices,
-      isValid: resolved.evaluation.isValid,
-      missingRequired: resolved.evaluation.missingRequired,
-      actionStatus: `Loaded preset ${preset.name}`
+      entryLabel: `preset ${preset.name}`,
+      payload: preset
     });
-    persistWorkingState(get());
+    saveSanitizedSettings(state.schemaBundle, restored.persistedSettings);
+    set(restored);
     clearActionStatus(get, set);
   },
   resetCurrentLook() {
@@ -366,33 +332,191 @@ export const useAppStore = create((set, get) => ({
   },
   importUserPresets(importedPresets) {
     const state = get();
-    const sanitized = (Array.isArray(importedPresets) ? importedPresets : [])
-      .filter((preset) => preset?.formValues && preset.type !== 'system')
-      .map((preset) => ({
-        ...preset,
-        id: crypto.randomUUID(),
-        type: 'user',
-        name: preset.name || `Imported ${Date.now()}`,
-        selectedModelId: preset.selectedModelId || state.selectedModelId
-      }));
-
-    const userPresets = [...sanitized, ...state.userPresets];
-    saveUserPresets(userPresets);
-    set({
-      userPresets,
-      presets: [...state.systemPresets, ...userPresets],
-      actionStatus: sanitized.length ? `Imported ${sanitized.length} custom preset${sanitized.length > 1 ? 's' : ''}` : 'No importable presets found'
+    const merged = mergeImportedPresets({
+      schemaBundle: state.schemaBundle,
+      models: state.models,
+      systemPresets: state.systemPresets,
+      userPresets: state.userPresets,
+      selectedModelId: state.selectedModelId,
+      importedPresets
     });
+
+    saveUserPresetsRecord(merged.userPresets, state.schemaBundle?.version);
+    set(merged);
     clearActionStatus(get, set);
   }
 }));
+
+export function createInitializedState({
+  schemaBundle,
+  models,
+  systemPresets,
+  settingsRecord,
+  userPresetRecord,
+  galleryEntries
+}) {
+  const sanitizedSettings = sanitizeSettings(
+    schemaBundle,
+    models,
+    settingsRecord?.value,
+    settingsRecord
+  );
+  const sanitizedPresets = sanitizePresetCollection(
+    schemaBundle,
+    models,
+    userPresetRecord?.value
+  );
+  const sanitizedGallery = sanitizeGalleryEntries(schemaBundle, models, galleryEntries);
+  const resolved = resolveState(schemaBundle, sanitizedSettings.value.formValues);
+  const activeCategoryId = selectActiveCategoryId(
+    schemaBundle,
+    resolved.evaluation.visibleCategories,
+    sanitizedSettings.value.activeCategoryId
+  );
+  const selectedModelId = sanitizedSettings.value.selectedModelId;
+  const locks = {
+    ...createDefaultLocks(schemaBundle),
+    ...(sanitizedSettings.value.locks || {})
+  };
+  const recoveryNotices = [
+    ...sanitizedSettings.notices,
+    ...sanitizedPresets.notices,
+    ...sanitizedGallery.notices
+  ];
+
+  return {
+    schemaBundle,
+    fieldIndex: buildFieldIndex(schemaBundle),
+    models,
+    selectedModelId,
+    formValues: resolved.values,
+    locks,
+    disabled: resolved.evaluation.disabled,
+    visibleCategories: resolved.evaluation.visibleCategories,
+    promptPackage: buildPromptPackage(
+      schemaBundle,
+      models,
+      selectedModelId,
+      resolved.values,
+      resolved.evaluation.visibleCategories
+    ),
+    notices: resolved.evaluation.notices,
+    isValid: resolved.evaluation.isValid,
+    missingRequired: resolved.evaluation.missingRequired,
+    systemPresets,
+    userPresets: sanitizedPresets.value,
+    presets: [...systemPresets, ...sanitizedPresets.value],
+    gallery: sanitizedGallery.value,
+    activeCategoryId,
+    copyStatus: '',
+    actionStatus: buildRecoveryStatus(
+      'Recovered your session',
+      recoveryNotices,
+      sanitizedSettings.quarantined
+        + sanitizedPresets.quarantined
+        + sanitizedGallery.quarantined
+    ),
+    loading: false,
+    error: '',
+    persistedSettings: {
+      selectedModelId,
+      locks,
+      formValues: resolved.values,
+      activeCategoryId
+    }
+  };
+}
+
+export function restorePersistedSelection({
+  schemaBundle,
+  models,
+  selectedModelId,
+  activeCategoryId,
+  locks,
+  entryLabel,
+  payload
+}) {
+  const sanitizedSelection = sanitizeSettings(schemaBundle, models, {
+    selectedModelId: payload?.selectedModelId || selectedModelId,
+    formValues: payload?.formValues,
+    locks,
+    activeCategoryId
+  });
+  const resolved = resolveState(schemaBundle, sanitizedSelection.value.formValues);
+  const nextActiveCategoryId = selectActiveCategoryId(
+    schemaBundle,
+    resolved.evaluation.visibleCategories,
+    sanitizedSelection.value.activeCategoryId
+  );
+
+  return {
+    selectedModelId: sanitizedSelection.value.selectedModelId,
+    formValues: resolved.values,
+    disabled: resolved.evaluation.disabled,
+    visibleCategories: resolved.evaluation.visibleCategories,
+    activeCategoryId: nextActiveCategoryId,
+    promptPackage: buildPromptPackage(
+      schemaBundle,
+      models,
+      sanitizedSelection.value.selectedModelId,
+      resolved.values,
+      resolved.evaluation.visibleCategories
+    ),
+    notices: resolved.evaluation.notices,
+    isValid: resolved.evaluation.isValid,
+    missingRequired: resolved.evaluation.missingRequired,
+    actionStatus: buildRecoveryStatus(
+      `Recovered ${entryLabel}`,
+      sanitizedSelection.notices,
+      sanitizedSelection.quarantined
+    ),
+    persistedSettings: {
+      selectedModelId: sanitizedSelection.value.selectedModelId,
+      locks,
+      formValues: resolved.values,
+      activeCategoryId: nextActiveCategoryId
+    }
+  };
+}
+
+export function mergeImportedPresets({
+  schemaBundle,
+  models,
+  systemPresets,
+  userPresets,
+  selectedModelId,
+  importedPresets
+}) {
+  const sanitizedImport = sanitizeImportedPresets(schemaBundle, models, importedPresets);
+  const preparedImports = sanitizedImport.value.map((preset, index) => ({
+    ...preset,
+    id: crypto.randomUUID(),
+    type: 'user',
+    name: preset.name || `Imported ${Date.now() + index}`,
+    selectedModelId: preset.selectedModelId || selectedModelId
+  }));
+  const nextUserPresets = [...preparedImports, ...userPresets];
+
+  return {
+    userPresets: nextUserPresets,
+    presets: [...systemPresets, ...nextUserPresets],
+    actionStatus: buildRecoveryStatus(
+      preparedImports.length
+        ? `Recovered and imported ${preparedImports.length} preset${preparedImports.length === 1 ? '' : 's'}`
+        : 'Recovered preset import',
+      sanitizedImport.notices,
+      sanitizedImport.quarantined,
+      preparedImports.length ? null : 'No importable presets were added'
+    )
+  };
+}
 
 function persistWorkingState(state) {
   if (!state?.schemaBundle) {
     return;
   }
 
-  saveSettings(createSettingsPatch(loadSettings(), {
+  saveSanitizedSettings(state.schemaBundle, createSettingsPatch(loadSettings(), {
     selectedModelId: state.selectedModelId,
     locks: state.locks,
     formValues: state.formValues,
@@ -415,6 +539,42 @@ function clearActionStatus(get, set) {
       set({ actionStatus: '' });
     }
   }, 1800);
+}
+
+function buildRecoveryStatus(baseMessage, notices, quarantined, fallbackMessage = null) {
+  if (!notices.length && !quarantined) {
+    return fallbackMessage || baseMessage.replace(/^Recovered /, '');
+  }
+
+  const details = [];
+
+  if (notices.length) {
+    details.push(`${notices.length} recovery adjustment${notices.length === 1 ? '' : 's'}`);
+  }
+
+  if (quarantined) {
+    details.push(`quarantined ${quarantined} invalid item${quarantined === 1 ? '' : 's'}`);
+  }
+
+  if (fallbackMessage) {
+    details.push(fallbackMessage);
+  }
+
+  return `${baseMessage}: ${details.join('. ')}.`;
+}
+
+function saveSanitizedSettings(schemaBundle, settings) {
+  saveSettingsRecord(settings, schemaBundle?.version);
+}
+
+async function replaceGalleryEntries(entries) {
+  await galleryDb.transaction('rw', galleryDb.images, async () => {
+    await galleryDb.images.clear();
+
+    if (entries.length) {
+      await galleryDb.images.bulkPut(entries);
+    }
+  });
 }
 
 function downloadJson(filename, data) {
